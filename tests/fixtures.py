@@ -28,6 +28,23 @@ def make_xlsx(path: str) -> None:
     wb.save(path)
 
 
+def make_xls(path: str) -> None:
+    """xlwt 로 구형 이진 .xls 샘플을 만듭니다."""
+    import xlwt
+
+    wb = xlwt.Workbook()
+    ws = wb.add_sheet("참가신청")
+    rows = [
+        ["학교명", "신청 인원", "종목"],
+        ["무릉초", 3, "축구"],
+        ["노형초", 5, "농구"],
+    ]
+    for r, row in enumerate(rows):
+        for c, value in enumerate(row):
+            ws.write(r, c, value)
+    wb.save(path)
+
+
 def make_odt(path: str) -> None:
     """최소 구조의 ODT(zip + content.xml) 샘플을 만듭니다."""
     content = (

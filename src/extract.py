@@ -27,12 +27,14 @@ from typing import Optional
 if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from src.parsers import (
-        extract_pdf, extract_xlsx, extract_odt, extract_hwpx, extract_hwp, ImagePdfError,
+        extract_pdf, extract_xlsx, extract_xls, extract_odt, extract_hwpx, extract_hwp,
+        ImagePdfError,
     )
     from src.extractor import parse_filename, ParsedFilename
 else:
     from .parsers import (
-        extract_pdf, extract_xlsx, extract_odt, extract_hwpx, extract_hwp, ImagePdfError,
+        extract_pdf, extract_xlsx, extract_xls, extract_odt, extract_hwpx, extract_hwp,
+        ImagePdfError,
     )
     from .extractor import parse_filename, ParsedFilename
 
@@ -44,7 +46,7 @@ _PARSERS = {
     "hwpx": extract_hwpx,
     "odt": extract_odt,
     "xlsx": extract_xlsx,
-    "xls": extract_xlsx,   # 구형 확장자도 openpyxl 로 시도
+    "xls": extract_xls,    # 구형 이진 엑셀은 xlrd 로 (openpyxl 은 못 읽음)
 }
 
 

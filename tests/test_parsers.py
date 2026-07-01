@@ -7,8 +7,20 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
 
-from src.parsers import extract_xlsx, extract_odt, extract_hwpx, extract_pdf, ImagePdfError
+from src.parsers import extract_xlsx, extract_xls, extract_odt, extract_hwpx, extract_pdf, ImagePdfError
 from tests import fixtures
+
+
+def test_xls_old_binary(tmp_path):
+    """구형 이진 .xls 도 xlrd 로 읽혀야 한다 (실제 공문에 섞여 옴)."""
+    p = str(tmp_path / "구형.xls")
+    fixtures.make_xls(p)
+    text = extract_xls(p)
+
+    assert "참가신청" in text     # 시트 이름
+    assert "무릉초" in text
+    assert "3" in text            # 정수는 3.0 이 아니라 3 으로
+    assert "3.0" not in text
 
 
 def test_xlsx(tmp_path):

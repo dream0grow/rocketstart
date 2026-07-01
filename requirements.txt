@@ -4,4 +4,5 @@
 pdfplumber==0.11.4   # PDF(텍스트) 추출
 openpyxl==3.1.5      # XLSX(엑셀) 표 읽기
 olefile==0.47        # HWP(구형 5.0) 안의 저장 구조 열기
+xlrd==2.0.1          # XLS(구형 이진 엑셀 2003 이전) 읽기 — openpyxl 이 못 여는 형식
 # HWPX / ODT 는 파이썬 표준 라이브러리(zipfile, xml)만으로 처리 → 추가 설치 불필요
