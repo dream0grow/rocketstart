@@ -1,0 +1,45 @@
+# study/ 폴더의 '100시간 공부' 웹앱을 GitHub Pages로 배포합니다.
+# main 브랜치의 study/ 가 바뀔 때마다 자동 배포됩니다.
+# (처음 한 번은 저장소 Settings → Pages → Source를 "GitHub Actions"로 설정해야 할 수 있습니다.)
+name: Deploy study app to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "study/**"
+      - ".github/workflows/deploy-pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 동시에 하나의 배포만 진행
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Pages 설정
+        uses: actions/configure-pages@v5
+
+      # study/ 폴더만 배포 대상으로 업로드 → 사이트 루트가 됩니다.
+      - name: 산출물 업로드
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: study
+
+      - name: 배포
+        id: deployment
+        uses: actions/deploy-pages@v4

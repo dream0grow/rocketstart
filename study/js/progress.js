@@ -18,6 +18,44 @@ App.progress = (function () {
     App.util.$("#pg-today").textContent = App.util.hm(todaySec);
     App.util.$("#pg-percent").textContent = pct.toFixed(1) + "%";
     App.util.$("#pg-bar-fill").style.width = pct + "%";
+
+    renderWeek();
   }
+
+  // 최근 7일 막대그래프 (하루 공부시간)
+  const WEEK = ["일", "월", "화", "수", "목", "금", "토"];
+  function renderWeek() {
+    const box = App.util.$("#pg-week");
+    if (!box) return;
+
+    // 오늘 포함 최근 7일 데이터 모으기
+    const today = new Date();
+    const todayKey = App.store.dateKey(today);
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = App.store.dateKey(d);
+      days.push({ key, dow: WEEK[d.getDay()], day: d.getDate(), sec: App.store.daySeconds(key) });
+    }
+    const maxSec = Math.max(1, ...days.map((d) => d.sec)); // 0으로 나누기 방지
+
+    box.innerHTML = days
+      .map((d) => {
+        const h = Math.round((d.sec / maxSec) * 100); // 막대 높이 %
+        // 좁은 막대라 '분' 단위로 짧게 표시 (예: 75분)
+        const val = d.sec > 0 ? Math.round(d.sec / 60) + "분" : "";
+        const isToday = d.key === todayKey ? " today" : "";
+        return (
+          `<div class="wk-col${isToday}">` +
+          `<div class="wk-val">${val}</div>` +
+          `<div class="wk-track"><div class="wk-bar" style="height:${d.sec > 0 ? Math.max(6, h) : 0}%"></div></div>` +
+          `<div class="wk-label">${d.dow}<br>${d.day}</div>` +
+          `</div>`
+        );
+      })
+      .join("");
+  }
+
   return { render };
 })();

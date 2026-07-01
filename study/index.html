@@ -56,6 +56,9 @@
         <div class="stat"><div class="stat-label">남은 시간</div><div id="pg-remain" class="stat-value">100시간</div></div>
         <div class="stat"><div class="stat-label">오늘 공부</div><div id="pg-today" class="stat-value">0분</div></div>
       </div>
+
+      <h2 class="sub">최근 7일</h2>
+      <div id="pg-week" class="week-chart"></div>
     </section>
 
     <!-- ===== 달력 ===== -->
@@ -89,6 +92,14 @@
       <div class="set-row">
         <label for="set-breakMin">휴식 길이(분)</label>
         <input id="set-breakMin" type="number" min="1" max="60" inputmode="numeric" />
+      </div>
+      <div class="set-row">
+        <label for="set-longBreakMin">긴 휴식 길이(분)</label>
+        <input id="set-longBreakMin" type="number" min="1" max="120" inputmode="numeric" />
+      </div>
+      <div class="set-row">
+        <label for="set-longBreakEvery">몇 번째 휴식마다 긴 휴식</label>
+        <input id="set-longBreakEvery" type="number" min="1" max="10" inputmode="numeric" />
       </div>
       <div class="set-row">
         <label for="set-goal">목표 시간(시간)</label>
