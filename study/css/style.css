@@ -117,6 +117,15 @@ body {
 .stat-label { font-size: 13px; color: var(--muted); }
 .stat-value { font-size: 22px; font-weight: 700; margin-top: 6px; }
 
+/* 목표 종료 예상일 */
+.eta-text {
+  text-align: center;
+  font-size: 15px;
+  color: var(--break);   /* 휴식 색(초록 계열)으로 눈에 띄었이 돋보이게 */
+  margin: 6px 0 18px;
+  min-height: 1.4em;     /* 데이터 로딩 전 레이아웃 진동 방지 */
+}
+
 /* 최근 7일 막대그래프 */
 .week-chart { display: flex; align-items: flex-end; gap: 6px; height: 150px; margin-top: 8px; }
 .wk-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
