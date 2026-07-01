@@ -43,12 +43,26 @@ def main():
     # 대상 파일: 인자로 받거나, 없으면 예시 샘플을 만들어 씀
     if len(sys.argv) > 1:
         path = sys.argv[1]
+        if not os.path.isfile(path):
+            print(f"✗ 파일을 찾을 수 없습니다:\n    {path}\n")
+            print("확인하세요:")
+            print("  · 그 공문 파일이 지금 이 폴더 안에 실제로 있는지")
+            print("  · 파일 이름이 정확히 같은지 (띄어쓰기·괄호까지)")
+            print("  · 팁: 파일 이름을 test.hwp 처럼 간단히 바꾼 뒤")
+            print("        python verify_ai.py test.hwp  로 실행하면 쉽습니다.")
+            print("  · 또는 파일 이름 없이  python verify_ai.py  만 실행하면 예시로 확인됩니다.")
+            return 1
     else:
-        path = "/tmp/gmb_ai_sample.hwpx"
+        # 운영체제에 맞는 임시 폴더에 예시 파일을 만듭니다 (윈도우/맥 모두 안전).
+        import tempfile
+        path = os.path.join(tempfile.gettempdir(), "gmb_ai_sample.hwpx")
         _make_sample(path)
         print(f"(예시 샘플로 진행합니다: {os.path.basename(path)})\n")
 
     result = extract_file(path, with_ai=True, ai_model=model)
+    if not result.ok and not result.text:
+        # 본문을 못 읽은 경우(이미지 PDF 등) 안내
+        print(f"[안내] {result.message}")
 
     print("-" * 64)
     print(f"제목(규칙): {result.filename_info.get('title')}")

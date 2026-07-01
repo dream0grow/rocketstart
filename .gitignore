@@ -10,6 +10,9 @@ venv/
 tests/samples/*
 !tests/samples/.gitkeep
 
+# 실제 공문 데이터가 든 대시보드 결과물 — 커밋 안 함 (프로토타입은 각자 생성)
+prototype/dashboard.html
+
 # OS
 .DS_Store
 Thumbs.db

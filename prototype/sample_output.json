@@ -1,0 +1,97 @@
+{
+  "file_path": "/tmp/(무릉초등학교-2974 (첨부) 제주특별자치도교육청 체육건강과) 2026년 전국초등교원체육연수 신청 안내.hwpx",
+  "extension": "hwpx",
+  "filename_info": {
+    "recipient": "무릉초등학교",
+    "doc_number": "2974",
+    "kind": "첨부",
+    "sender": "제주특별자치도교육청 체육건강과",
+    "title": "2026년 전국초등교원체육연수 신청 안내",
+    "extension": "hwpx",
+    "matched": true
+  },
+  "text": "2026년 전국초등교원체육연수 계획\n신청 기한: 2026. 7. 29.(수)",
+  "char_count": 42,
+  "deadline_info": {
+    "all_dates": [
+      {
+        "iso": "2026-07-29",
+        "raw": "2026. 7. 29.",
+        "year": 2026,
+        "month": 7,
+        "day": 29,
+        "label": "신청기한",
+        "is_deadline": true,
+        "keyword": "신청",
+        "context": "26년 전국초등교원체육연수 계획 신청 기한: 2026. 7. 29.(수)"
+      }
+    ],
+    "deadlines": [
+      {
+        "iso": "2026-07-29",
+        "raw": "2026. 7. 29.",
+        "year": 2026,
+        "month": 7,
+        "day": 29,
+        "label": "신청기한",
+        "is_deadline": true,
+        "keyword": "신청",
+        "context": "26년 전국초등교원체육연수 계획 신청 기한: 2026. 7. 29.(수)"
+      }
+    ],
+    "primary": {
+      "iso": "2026-07-29",
+      "raw": "2026. 7. 29.",
+      "year": 2026,
+      "month": 7,
+      "day": 29,
+      "label": "신청기한",
+      "is_deadline": true,
+      "keyword": "신청",
+      "context": "26년 전국초등교원체육연수 계획 신청 기한: 2026. 7. 29.(수)"
+    },
+    "has_deadline": true
+  },
+  "notebook": {
+    "title": "2026년 전국초등교원체육연수 신청 안내",
+    "sender": "제주특별자치도교육청 체육건강과",
+    "doc_number": "2974",
+    "kind": "첨부",
+    "extension": "hwpx",
+    "sender_level": "상급기관",
+    "category": "할일형",
+    "category_reason": "마감일(액션 기한)이 있어 할일형으로 분류",
+    "placement": "교무수첩 상단(할 일·D-day)",
+    "task_type": "연수/교육",
+    "deadline_iso": "2026-07-29",
+    "deadline_label": "신청기한",
+    "deadline_raw": "2026. 7. 29.",
+    "d_day": 28,
+    "d_day_text": "D-28",
+    "other_deadlines": [],
+    "stale_dropped": 0,
+    "is_image": false,
+    "needs_review": true
+  },
+  "ai": {
+    "available": true,
+    "model": "qwen2.5:3b",
+    "summary": "전국초등교원 체육연수 신청 안내",
+    "summary_evidence": "제목",
+    "tasks": [
+      {
+        "text": "교사 안내",
+        "evidence": "참가대상"
+      },
+      {
+        "text": "신청서 제출",
+        "evidence": "신청기한 2026. 7. 3."
+      }
+    ],
+    "notice": "AI가 제안한 내용입니다. 반드시 확인해 주세요. (마감일·기관명은 규칙 추출이 정답)",
+    "raw": "- 한 줄 요약: 전국초등교원 체육연수 신청 안내 [근거: 제목]\n- 해야 할 일:\n  1. 교사 안내 [근거: 참가대상]\n  2. 신청서 제출 [근거: 신청기한 2026. 7. 3.]",
+    "message": ""
+  },
+  "ok": true,
+  "message": "추출 성공"
+}
