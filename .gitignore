@@ -1,0 +1,15 @@
+# 파이썬
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# 실제 공문(개인정보 포함 가능) — 저장소에 올리지 않습니다 (보안 원칙)
+tests/samples/*
+!tests/samples/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
