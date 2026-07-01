@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <!-- viewport-fit=cover: 아이폰 노치/홈바 영역까지 안전하게 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>100시간 공부</title>
+
+  <!-- PWA / iOS 홈 화면 설치용 -->
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <meta name="theme-color" content="#0f1220" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="100시간 공부" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+  <main class="app">
+
+    <!-- ===== 타이머 ===== -->
+    <section id="view-timer" class="view active">
+      <h1 class="brand">100시간 공부</h1>
+
+      <div class="ring-wrap">
+        <svg viewBox="0 0 300 300" class="ring">
+          <circle class="ring-bg" cx="150" cy="150" r="130" />
+          <circle id="ring-fill" class="ring-fill" cx="150" cy="150" r="130"
+                  transform="rotate(-90 150 150)" />
+        </svg>
+        <div class="ring-center">
+          <div id="timer-label" class="timer-label">준비</div>
+          <div id="timer-time" class="timer-time">25:00</div>
+          <div id="timer-cycle" class="cycle"></div>
+        </div>
+      </div>
+
+      <div id="focus-picker" class="picker"></div>
+
+      <div class="controls">
+        <button id="btn-start" class="btn primary">시작</button>
+        <button id="btn-pause" class="btn" hidden>일시정지</button>
+        <button id="btn-stop" class="btn ghost" hidden>정지</button>
+      </div>
+    </section>
+
+    <!-- ===== 진행 ===== -->
+    <section id="view-progress" class="view">
+      <h1 class="brand">진행 상황</h1>
+      <div class="big-number"><span id="pg-percent">0%</span></div>
+      <div class="bar"><div id="pg-bar-fill" class="bar-fill"></div></div>
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-label">목표</div><div id="pg-goal" class="stat-value">100시간</div></div>
+        <div class="stat"><div class="stat-label">누적 공부</div><div id="pg-total" class="stat-value">0분</div></div>
+        <div class="stat"><div class="stat-label">남은 시간</div><div id="pg-remain" class="stat-value">100시간</div></div>
+        <div class="stat"><div class="stat-label">오늘 공부</div><div id="pg-today" class="stat-value">0분</div></div>
+      </div>
+    </section>
+
+    <!-- ===== 달력 ===== -->
+    <section id="view-calendar" class="view">
+      <div class="cal-top">
+        <button id="cal-prev" class="btn icon">‹</button>
+        <h1 id="cal-title" class="brand">달력</h1>
+        <button id="cal-next" class="btn icon">›</button>
+      </div>
+      <div id="cal-grid" class="cal-grid"></div>
+
+      <div id="cal-memo" class="memo" hidden>
+        <div class="memo-head">
+          <span id="cal-memo-date" class="memo-date"></span>
+          <span id="cal-memo-total" class="memo-total"></span>
+        </div>
+        <textarea id="cal-memo-text" class="memo-text" rows="4"
+                  placeholder="오늘 공부는 어땠나요? 성찰 메모를 남겨보세요."></textarea>
+        <button id="cal-memo-save" class="btn primary small">메모 저장</button>
+      </div>
+    </section>
+
+    <!-- ===== 설정 ===== -->
+    <section id="view-settings" class="view">
+      <h1 class="brand">설정</h1>
+
+      <div class="set-row">
+        <label for="set-breakN">몇 회 공부 후 휴식</label>
+        <input id="set-breakN" type="number" min="1" max="12" inputmode="numeric" />
+      </div>
+      <div class="set-row">
+        <label for="set-breakMin">휴식 길이(분)</label>
+        <input id="set-breakMin" type="number" min="1" max="60" inputmode="numeric" />
+      </div>
+      <div class="set-row">
+        <label for="set-goal">목표 시간(시간)</label>
+        <input id="set-goal" type="number" min="1" max="10000" inputmode="numeric" />
+      </div>
+      <div class="set-row">
+        <label for="set-beep">완료음</label>
+        <input id="set-beep" type="checkbox" class="switch" />
+      </div>
+      <div class="set-row">
+        <label for="set-awake">화면 켜두기</label>
+        <input id="set-awake" type="checkbox" class="switch" />
+      </div>
+      <p id="set-awake-note" class="note"></p>
+
+      <hr class="sep" />
+      <h2 class="sub">백업</h2>
+      <div class="set-actions">
+        <button id="set-export" class="btn">내보내기(파일 저장)</button>
+        <label class="btn file-btn">
+          가져오기(파일 선택)
+          <input id="set-import" type="file" accept="application/json,.json" hidden />
+        </label>
+      </div>
+      <button id="set-reset" class="btn danger">기록 전체 초기화</button>
+      <p class="note">모든 기록은 이 기기 안에만 저장됩니다. (서버로 전송되지 않습니다.)</p>
+    </section>
+
+  </main>
+
+  <!-- 하단 탭바 -->
+  <nav class="tabbar">
+    <button class="tab active" data-view="timer"><span>⏱</span>타이머</button>
+    <button class="tab" data-view="progress"><span>📊</span>진행</button>
+    <button class="tab" data-view="calendar"><span>📅</span>달력</button>
+    <button class="tab" data-view="settings"><span>⚙️</span>설정</button>
+  </nav>
+
+  <!-- 스크립트: store → 부품들 → 앱 순서로 로드 -->
+  <script src="./js/store.js"></script>
+  <script src="./js/wakelock.js"></script>
+  <script src="./js/beep.js"></script>
+  <script src="./js/timer.js"></script>
+  <script src="./js/progress.js"></script>
+  <script src="./js/calendar.js"></script>
+  <script src="./js/settings.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
