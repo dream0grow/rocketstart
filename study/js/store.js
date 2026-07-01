@@ -120,6 +120,37 @@ App.store = (function () {
     return out;
   }
 
+  // 최근 N일간 하루 평균 공부 초를 계산합니다.
+  // - 오늘 포함 최근 lookbackDays일 범위를 봅니다.
+  // - 공부한 날(1초 이상)이 minDays일 미만이면 null을 반환합니다.
+  //   → 호출부에서 null이면 "데이터가 더 쌓이면 알려드려요"를 표시합니다.
+  // - 평균은 '공부한 날의 합 ÷ 공부한 날 수'로 계산합니다.
+  //   (공부 안 한 날을 0으로 포함하면 평균이 너무 낮게 나와 예측이 부정확해집니다.)
+  function avgDailySeconds(lookbackDays, minDays) {
+    lookbackDays = lookbackDays || 14; // 기본: 최근 14일
+    minDays = minDays || 3;            // 기본: 최소 3일치 데이터 필요
+
+    const today = new Date();
+    let totalSec = 0;
+    let studiedDays = 0;
+
+    for (let i = 0; i < lookbackDays; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() - i);
+      const key = dateKey(d);
+      const sec = daySeconds(key);
+      if (sec > 0) {
+        totalSec += sec;
+        studiedDays++;
+      }
+    }
+
+    // 공부한 날이 너무 적으면 예측 불가 신호로 null 반환
+    if (studiedDays < minDays) return null;
+
+    return totalSec / studiedDays; // 공부한 날 기준 하루 평균 초
+  }
+
   // --- 백업(내보내기/가져오기) ---
   function exportJSON() {
     return JSON.stringify(load(), null, 2);
@@ -163,6 +194,7 @@ App.store = (function () {
     totalSeconds,
     daySeconds,
     dailyTotals,
+    avgDailySeconds,
     exportJSON,
     importJSON,
     reset,
