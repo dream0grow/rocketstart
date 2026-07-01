@@ -1,0 +1,10 @@
+{
+  "name": "RocketStart",
+  "short_name": "RocketStart",
+  "description": "미루기를 줄이는 3일 90% 산출물 스프린트 앱",
+  "start_url": "/today",
+  "display": "standalone",
+  "background_color": "#f7f7f8",
+  "theme_color": "#18181b",
+  "icons": []
+}
