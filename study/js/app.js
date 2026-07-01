@@ -59,7 +59,7 @@ App.timerView = (function () {
 
   function labelText(state) {
     if (state.mode === "focus") return "집중 중";
-    if (state.mode === "break") return "휴식";
+    if (state.mode === "break") return state.breakIsLong ? "긴 휴식" : "휴식";
     return "준비";
   }
 

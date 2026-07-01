@@ -20,6 +20,8 @@ App.timer = (function () {
   let segStart = 0;         // 지금 '켜져서' 공부를 시작한 시각(실측용)
   let accumulatedSec = 0;   // 이번 공부 세션에서 실제 공부한 초
   let completedPomodoros = 0; // 휴식 주기 판단용 (앱을 새로 열면 0으로)
+  let completedBreaks = 0;  // 지금까지 쉰 횟수 (긴 휴식 주기 판단용)
+  let breakIsLong = false;  // 지금 휴식이 '긴 휴식'인지
   let ticker = null;
   let renderCb = null;      // 화면 갱신 콜백
 
@@ -39,6 +41,7 @@ App.timer = (function () {
       durationMs,
       completedPomodoros,
       breakAfterN: s.breakAfterN,
+      breakIsLong,
     };
   }
 
@@ -70,11 +73,12 @@ App.timer = (function () {
     resume();
   }
 
-  // 휴식 시작
-  function startBreak() {
+  // 휴식 시작 (isLong=true면 긴 휴식)
+  function startBreak(isLong) {
     const s = App.store.getSettings();
     mode = "break";
-    durationMs = s.breakMinutes * 60 * 1000;
+    breakIsLong = !!isLong;
+    durationMs = (isLong ? s.longBreakMinutes : s.breakMinutes) * 60 * 1000;
     remainingMs = durationMs;
     resume();
   }
@@ -135,7 +139,10 @@ App.timer = (function () {
       const s = App.store.getSettings();
       // 정해진 횟수만큼 공부했으면 → 휴식으로
       if (completedPomodoros % s.breakAfterN === 0) {
-        startBreak();
+        completedBreaks += 1;
+        // 정해진 횟수마다 '긴 휴식'
+        const isLong = completedBreaks % s.longBreakEvery === 0;
+        startBreak(isLong);
         return;
       }
     } else if (mode === "break") {
@@ -148,6 +155,7 @@ App.timer = (function () {
   function goIdle() {
     mode = "idle";
     running = false;
+    breakIsLong = false;
     const s = App.store.getSettings();
     durationMs = s.focusMinutes * 60 * 1000;
     remainingMs = durationMs;

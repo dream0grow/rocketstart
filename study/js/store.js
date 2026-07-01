@@ -13,12 +13,14 @@ App.store = (function () {
 
   // 설정 기본값 — 앱에서 바꿀 수 있습니다.
   const DEFAULT_SETTINGS = {
-    focusMinutes: 25,   // 한 번 공부(뽀모도로) 길이 (5분 단위 5~30)
-    breakAfterN: 4,     // 뽀모도로 몇 회 후 휴식할지
-    breakMinutes: 10,   // 휴식 길이(분)
-    goalHours: 100,     // 목표 시간
-    beepEnabled: true,  // 완료음 사용
-    keepAwake: true,    // 화면 켜두기 사용
+    focusMinutes: 25,     // 한 번 공부(뽀모도로) 길이 (5분 단위 5~30)
+    breakAfterN: 4,       // 뽀모도로 몇 회 후 휴식할지
+    breakMinutes: 10,     // (짧은) 휴식 길이(분)
+    longBreakMinutes: 20, // 긴 휴식 길이(분)
+    longBreakEvery: 2,    // 몇 번째 휴식마다 긴 휴식을 줄지 (예: 2 = 두 번째 휴식마다)
+    goalHours: 100,       // 목표 시간
+    beepEnabled: true,    // 완료음 사용
+    keepAwake: true,      // 화면 켜두기 사용
   };
 
   // 저장소 초기 모양

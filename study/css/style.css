@@ -117,6 +117,16 @@ body {
 .stat-label { font-size: 13px; color: var(--muted); }
 .stat-value { font-size: 22px; font-weight: 700; margin-top: 6px; }
 
+/* 최근 7일 막대그래프 */
+.week-chart { display: flex; align-items: flex-end; gap: 6px; height: 150px; margin-top: 8px; }
+.wk-col { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.wk-val { font-size: 10px; color: var(--break); height: 22px; line-height: 1.1; text-align: center; }
+.wk-track { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.wk-bar { width: 100%; background: var(--accent); border-radius: 6px 6px 0 0; min-height: 0; transition: height .4s ease; }
+.wk-col.today .wk-bar { background: var(--break); }
+.wk-label { font-size: 11px; color: var(--muted); text-align: center; margin-top: 6px; line-height: 1.2; }
+.wk-col.today .wk-label { color: var(--text); font-weight: 700; }
+
 /* ===== 달력 ===== */
 .cal-top { display: flex; align-items: center; justify-content: space-between; }
 .cal-top .brand { margin: 8px 0 16px; }

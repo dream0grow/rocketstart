@@ -2,7 +2,7 @@
 // 앱을 이루는 파일들을 미리 저장해 두어, 인터넷이 없어도 앱이 열리게 합니다.
 // 앱 코드를 바꾸면 아래 CACHE 버전을 올려주세요(예: v1 → v2). 그래야 새 파일을 받아옵니다.
 
-const CACHE = "study-v1";
+const CACHE = "study-v2";
 
 const ASSETS = [
   "./",

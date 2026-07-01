@@ -9,6 +9,8 @@ App.settings = (function () {
     const s = App.store.getSettings();
     App.util.$("#set-breakN").value = s.breakAfterN;
     App.util.$("#set-breakMin").value = s.breakMinutes;
+    App.util.$("#set-longBreakMin").value = s.longBreakMinutes;
+    App.util.$("#set-longBreakEvery").value = s.longBreakEvery;
     App.util.$("#set-goal").value = s.goalHours;
     App.util.$("#set-beep").checked = s.beepEnabled;
     App.util.$("#set-awake").checked = s.keepAwake;
@@ -30,6 +32,12 @@ App.settings = (function () {
     );
     App.util.$("#set-breakMin").addEventListener("change", (e) =>
       App.store.updateSettings({ breakMinutes: clampInt(e.target.value, 1, 60, 10) })
+    );
+    App.util.$("#set-longBreakMin").addEventListener("change", (e) =>
+      App.store.updateSettings({ longBreakMinutes: clampInt(e.target.value, 1, 120, 20) })
+    );
+    App.util.$("#set-longBreakEvery").addEventListener("change", (e) =>
+      App.store.updateSettings({ longBreakEvery: clampInt(e.target.value, 1, 10, 2) })
     );
     App.util.$("#set-goal").addEventListener("change", (e) => {
       App.store.updateSettings({ goalHours: clampInt(e.target.value, 1, 10000, 100) });
