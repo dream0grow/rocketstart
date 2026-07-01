@@ -33,6 +33,9 @@ jobs:
 
       - name: Pages 설정
         uses: actions/configure-pages@v5
+        with:
+          # Pages가 꺼져 있으면 자동으로 켭니다(수동 설정 불필요).
+          enablement: true
 
       # study/ 폴더만 배포 대상으로 업로드 → 사이트 루트가 됩니다.
       - name: 산출물 업로드
