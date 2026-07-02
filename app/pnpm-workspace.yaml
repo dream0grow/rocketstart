@@ -1,7 +1,12 @@
+# 이 폴더(app) 하나만 패키지로 쓰는 단일 구성입니다.
+# (pnpm 은 이 파일이 있으면 packages 항목을 요구합니다)
+packages:
+  - "."
+
 # 네이티브 모듈(빌드가 필요한 의존성)만 설치 스크립트 실행을 허용합니다.
-# pnpm 10 부터는 여기(또는 package.json 의 pnpm.onlyBuiltDependencies)에
-# 명시된 것만 빌드됩니다. better-sqlite3 는 Electron ABI 로 다시 빌드해야 하므로
-# (app/package.json 의 postinstall → electron-rebuild) 반드시 목록에 둡니다.
+# pnpm 10 부터는 여기에 명시된 것만 빌드됩니다. better-sqlite3 는
+# Electron ABI 로 다시 빌드해야 하므로(package.json 의 postinstall →
+# electron-rebuild) 반드시 목록에 둡니다.
 onlyBuiltDependencies:
   - better-sqlite3
   - electron
