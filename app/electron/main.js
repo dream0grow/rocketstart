@@ -46,6 +46,12 @@ function registerIpc() {
     return true;
   });
 
+  // 성격·처리주체 수동 수정 (자동 분류가 틀렸을 때 부장이 직접)
+  ipcMain.handle("cards:updateClass", (_e, { id, category, owner }) => {
+    db.updateCardClass(id, category, owner);
+    return true;
+  });
+
   // ── 투두리스트 (홈에서 바로 작성, 중요도 태그) ──
   ipcMain.handle("todos:list", () => db.listTodos());
   ipcMain.handle("todos:add", (_e, { text, priority, cardId }) =>
@@ -53,6 +59,10 @@ function registerIpc() {
   );
   ipcMain.handle("todos:toggle", (_e, { id, done }) => {
     db.toggleTodo(id, done);
+    return true;
+  });
+  ipcMain.handle("todos:update", (_e, { id, text, priority }) => {
+    db.updateTodo(id, text, priority);
     return true;
   });
   ipcMain.handle("todos:remove", (_e, { id }) => {

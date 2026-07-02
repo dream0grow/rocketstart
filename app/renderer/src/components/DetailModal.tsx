@@ -1,17 +1,28 @@
-import type { Card } from "../types";
-import { CATEGORY_META, computeDday, ddayText } from "../lib/cards";
+import type { Card, Category, Owner } from "../types";
+import { CATEGORIES, CATEGORY_META, computeDday, ddayText } from "../lib/cards";
 
 interface Props {
   card: Card | null;
   onClose: () => void;
+  onUpdated?: (card: Card) => void; // 성격·처리주체 수동 수정 반영
 }
 
 // 카드 클릭 상세 모달.
 // 발신기관·문서번호·성격·업무유형·마감일은 규칙 추출(정확)값을 그대로 표시하고,
 // 한 줄 요약·세부 할 일은 로컬 AI(Ollama) 제안이라 '확인 필요' 문구를 붙입니다.
 // 원본 파일 경로가 있으면(들어온 공문에서 넣은 공문) 바로 열 수 있습니다.
-export default function DetailModal({ card, onClose }: Props) {
+export default function DetailModal({ card, onClose, onUpdated }: Props) {
   if (!card) return null;
+
+  // 부장이 직접 성격/처리주체를 고칩니다 (자동 분류가 틀렸을 때).
+  async function changeClass(category: Category, owner: Owner) {
+    if (!card || card.id === undefined) return;
+    await window.gyomu.updateCardClass(card.id, category, owner);
+    onUpdated?.({
+      ...card, category, owner,
+      category_reason: "부장이 직접 수정 (자동 분류 아님)",
+    });
+  }
 
   const d = computeDday(card.deadline_iso); // 오늘 기준 재계산
   const dl = card.deadline_iso ? (
@@ -71,16 +82,41 @@ export default function DetailModal({ card, onClose }: Props) {
           </span>
         </Row>
         <Row k="공문 성격">
-          <span style={{ color: meta.color, fontWeight: 600 }}>
-            {meta.icon} {card.category}
-          </span>{" "}
+          {/* 자동 분류가 틀렸으면 여기서 바로 고칩니다 → 저장됨 */}
+          <select
+            value={card.category}
+            onChange={(e) => changeClass(e.target.value as Category, card.owner ?? null)}
+            style={{
+              border: "1px solid #d5dbdb", borderRadius: 6, padding: "3px 6px",
+              color: meta.color, fontWeight: 600, background: "#fff",
+            }}
+            title="자동 분류가 틀렸으면 직접 바꾸세요 (바로 저장됩니다)"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {CATEGORY_META[c].icon} {c}
+              </option>
+            ))}
+          </select>{" "}
           → {card.placement}
         </Row>
-        {card.owner && (
-          <Row k="처리 주체">
-            {card.owner === "부장" ? "👤 부장이 직접 처리" : "📢 담임 선생님들에게 공람"}
-          </Row>
-        )}
+        <Row k="처리 주체">
+          <select
+            value={card.owner ?? ""}
+            onChange={(e) =>
+              changeClass(card.category, (e.target.value || null) as Owner)
+            }
+            style={{
+              border: "1px solid #d5dbdb", borderRadius: 6, padding: "3px 6px",
+              background: "#fff",
+            }}
+            title="처리 주체도 직접 바꿀 수 있습니다"
+          >
+            <option value="">— 없음 —</option>
+            <option value="부장">👤 부장이 직접 처리</option>
+            <option value="담임(공람)">📢 담임 선생님들에게 공람</option>
+          </select>
+        </Row>
         <Row k="분류 근거">
           <span style={{ fontSize: 13, color: "#7f8c8d" }}>{card.category_reason}</span>
         </Row>
@@ -88,38 +124,57 @@ export default function DetailModal({ card, onClose }: Props) {
         <Row k="마감일">{dl}</Row>
         {others && <Row k="다른 기한">{others}</Row>}
 
-        {/* 같은 공문 세트의 첨부(서식·붙임) — 별도 카드가 아니라 여기에 묶임 */}
-        {card.attachments && card.attachments.length > 0 && (
-          <div style={{ marginTop: 10 }}>
-            <div style={{ fontSize: 13, color: "#7f8c8d", marginBottom: 4 }}>
-              📎 첨부 {card.attachments.length}건 (같은 공문 세트)
-            </div>
-            <ul style={{ fontSize: 13, paddingLeft: 18, margin: 0 }}>
-              {card.attachments.map((a, i) => (
-                <li key={i} style={{ margin: "3px 0" }}>
-                  {a.title || "(제목 없음)"}
-                  {a.extension && (
-                    <span style={{ color: "#95a5a6", fontSize: 11.5 }}>
-                      {" "}.{a.extension}
-                    </span>
-                  )}
-                  {a.file_path && (
-                    <button
-                      onClick={() => window.gyomu.openFile(a.file_path!)}
-                      style={{
-                        marginLeft: 6, border: "1px solid #d5dbdb",
-                        background: "#fff", borderRadius: 6, fontSize: 11,
-                        padding: "0 6px", cursor: "pointer",
-                      }}
-                    >
-                      열기
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
+        {/* 공문 세트 파일: 본문 원본 + 첨부(서식·붙임) 전부 */}
+        <div style={{ marginTop: 10 }}>
+          <div style={{ fontSize: 13, color: "#7f8c8d", marginBottom: 4 }}>
+            📎 공문 세트 파일 {1 + (card.attachments?.length ?? 0)}건 (본문 + 첨부)
           </div>
-        )}
+          <ul style={{ fontSize: 13, paddingLeft: 18, margin: 0 }}>
+            {/* 본문 원본 — 원래 파일명 형식으로 표시 */}
+            <li style={{ margin: "3px 0", fontWeight: 600 }}>
+              ({card.doc_number || "?"} (본문) {card.sender || ""}) {card.title || ""}
+              {card.extension && (
+                <span style={{ color: "#95a5a6", fontSize: 11.5, fontWeight: 400 }}>
+                  {" "}.{card.extension}
+                </span>
+              )}
+              {card.file_path && (
+                <button
+                  onClick={() => window.gyomu.openFile(card.file_path!)}
+                  style={{
+                    marginLeft: 6, border: "1px solid #d5dbdb",
+                    background: "#fff", borderRadius: 6, fontSize: 11,
+                    padding: "0 6px", cursor: "pointer",
+                  }}
+                >
+                  열기
+                </button>
+              )}
+            </li>
+            {(card.attachments ?? []).map((a, i) => (
+              <li key={i} style={{ margin: "3px 0" }}>
+                {a.title || "(제목 없음)"}
+                {a.extension && (
+                  <span style={{ color: "#95a5a6", fontSize: 11.5 }}>
+                    {" "}.{a.extension}
+                  </span>
+                )}
+                {a.file_path && (
+                  <button
+                    onClick={() => window.gyomu.openFile(a.file_path!)}
+                    style={{
+                      marginLeft: 6, border: "1px solid #d5dbdb",
+                      background: "#fff", borderRadius: 6, fontSize: 11,
+                      padding: "0 6px", cursor: "pointer",
+                    }}
+                  >
+                    열기
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
 
         {/* 원본 파일·첨부 열기 — 들어온 공문에서 넣은 공문부터 경로가 채워집니다 */}
         <div style={{ marginTop: 12, display: "flex", gap: 8 }}>

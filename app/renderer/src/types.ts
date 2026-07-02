@@ -114,12 +114,14 @@ export interface GyomuApi {
   listCards(): Promise<Card[]>;
   updateQuadrant(id: number, quadrant: Quadrant): Promise<void>;
   setCardDone(id: number, done: boolean): Promise<void>;
+  updateCardClass(id: number, category: Category, owner: Owner): Promise<void>;
   seedIfEmpty(): Promise<number>;
   extractFile(filePath: string, withAi?: boolean): Promise<ExtractResult>;
   openFile(filePath: string): Promise<void>;
   listTodos(): Promise<Todo[]>;
   addTodo(text: string, priority: TodoPriority, cardId?: number | null): Promise<number>;
   toggleTodo(id: number, done: boolean): Promise<void>;
+  updateTodo(id: number, text: string, priority: TodoPriority): Promise<void>;
   removeTodo(id: number): Promise<void>;
 }
 

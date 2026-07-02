@@ -51,6 +51,20 @@
   .strip b { font-size: 20px; }
   .strip .over { color: #e74c3c; }
 
+  /* 요약 띠 항목 = 클릭 필터 버튼 */
+  .strip-item {
+    background: none;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+  .strip-item:hover { background: #f0f3f4; }
+  .strip-item.on { background: #eafaf7; outline: 2px solid #1abc9c; }
+  .strip-item.over { color: #e74c3c; }
+
   /* 아이젠하워 칸 */
   .q {
     @apply bg-white rounded-[10px] shadow-card;
@@ -247,6 +261,12 @@
     line-height: 12px;
   }
   .cal-dot.over { background: #c0392b; }
+  .cal-help {
+    margin-top: 6px;
+    font-size: 10.5px;
+    color: #b2babb;
+    text-align: center;
+  }
 
   /* ── 투두리스트 패널 (상단, 크게) ─────────────────── */
   .todo-panel {
@@ -323,6 +343,8 @@
     background: #fdfdfd;
   }
   .todo-item .txt { flex: 1; min-width: 0; word-break: break-all; }
+  .todo-item .txt.clickable { cursor: pointer; }
+  .todo-item .txt.clickable:hover { color: #2471a3; text-decoration: underline; }
   .todo-item.done .txt { text-decoration: line-through; color: #b2babb; }
   .todo-item .del {
     border: none;

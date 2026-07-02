@@ -171,6 +171,14 @@ function setCardDone(id, done) {
   db.prepare("UPDATE cards SET done = ? WHERE id = ?").run(done ? 1 : 0, id);
 }
 
+// 부장이 직접 성격·처리주체를 고칩니다 (자동 분류가 틀렸을 때).
+// 수정 이력은 분류 근거에 남겨서, 나중에 규칙 개선 재료로 씁니다.
+function updateCardClass(id, category, owner) {
+  db.prepare(
+    "UPDATE cards SET category = ?, owner = ?, category_reason = ? WHERE id = ?"
+  ).run(category, owner ?? null, "부장이 직접 수정 (자동 분류 아님)", id);
+}
+
 function count() {
   return db.prepare("SELECT COUNT(*) AS n FROM cards").get().n;
 }
@@ -210,11 +218,18 @@ function toggleTodo(id, done) {
   db.prepare("UPDATE todos SET done = ? WHERE id = ?").run(done ? 1 : 0, id);
 }
 
+// 투두 내용·중요도 수정 (이름 편집, 중요도 클릭 변경).
+function updateTodo(id, text, priority) {
+  db.prepare("UPDATE todos SET text = ?, priority = ? WHERE id = ?")
+    .run(text, priority, id);
+}
+
 function removeTodo(id) {
   db.prepare("DELETE FROM todos WHERE id = ?").run(id);
 }
 
 module.exports = {
-  initDb, listCards, insertCard, updateQuadrant, setCardDone, count, seedCards,
-  listTodos, addTodo, toggleTodo, removeTodo,
+  initDb, listCards, insertCard, updateQuadrant, setCardDone, updateCardClass,
+  count, seedCards,
+  listTodos, addTodo, toggleTodo, updateTodo, removeTodo,
 };

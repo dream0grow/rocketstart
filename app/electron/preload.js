@@ -10,6 +10,9 @@ contextBridge.exposeInMainWorld("gyomu", {
     ipcRenderer.invoke("cards:updateQuadrant", { id, quadrant }),
   // 카드 처리 완료/해제
   setCardDone: (id, done) => ipcRenderer.invoke("cards:setDone", { id, done }),
+  // 성격·처리주체 수동 수정
+  updateCardClass: (id, category, owner) =>
+    ipcRenderer.invoke("cards:updateClass", { id, category, owner }),
   // DB 가 비어 있으면 시드 데이터 주입 → 넣은 개수 반환
   seedIfEmpty: () => ipcRenderer.invoke("cards:seedIfEmpty"),
   // 파일 1개를 파이썬 엔진으로 추출 (들어온 공문 단계에서 사용)
@@ -23,5 +26,7 @@ contextBridge.exposeInMainWorld("gyomu", {
   addTodo: (text, priority, cardId) =>
     ipcRenderer.invoke("todos:add", { text, priority, cardId }),
   toggleTodo: (id, done) => ipcRenderer.invoke("todos:toggle", { id, done }),
+  updateTodo: (id, text, priority) =>
+    ipcRenderer.invoke("todos:update", { id, text, priority }),
   removeTodo: (id) => ipcRenderer.invoke("todos:remove", { id }),
 });

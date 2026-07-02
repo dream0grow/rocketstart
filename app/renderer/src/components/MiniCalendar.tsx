@@ -5,15 +5,16 @@ import { computeDday, isoOf, monthMatrix, todayDate } from "../lib/cards";
 
 interface Props {
   cards: Card[];
-  selectedDay: string | null; // "YYYY-MM-DD" — 누르면 그 날짜 마감만 보기
-  onSelectDay: (iso: string | null) => void;
+  selectedDays: string[]; // 선택된 날짜들 (여러 개 가능)
+  onToggleDay: (iso: string, additive: boolean) => void;
 }
 
 const WEEK_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
 // 미니 캘린더 — 날짜마다 마감 건수를 점(배지)으로 표시.
-// 날짜를 누르면 그 날짜 마감 공문만 필터, 다시 누르면 해제.
-export default function MiniCalendar({ cards, selectedDay, onSelectDay }: Props) {
+// 클릭 = 그 날짜만 필터(다시 클릭하면 해제).
+// Shift 또는 Ctrl 누른 채 클릭 = 여러 날짜를 겹쳐 선택 (폴더 다중 선택처럼).
+export default function MiniCalendar({ cards, selectedDays, onToggleDay }: Props) {
   const today = todayDate();
   const [year, setYear] = useState(today.getFullYear());
   const [month0, setMonth0] = useState(today.getMonth());
@@ -57,11 +58,15 @@ export default function MiniCalendar({ cards, selectedDay, onSelectDay }: Props)
               className={cn(
                 "cal-cell",
                 iso === todayIso && "today",
-                iso === selectedDay && "selected",
+                selectedDays.includes(iso) && "selected",
                 n > 0 && "has-deadline"
               )}
-              onClick={() => onSelectDay(iso === selectedDay ? null : iso)}
-              title={n > 0 ? `마감 ${n}건` : undefined}
+              onClick={(e) => onToggleDay(iso, e.shiftKey || e.ctrlKey || e.metaKey)}
+              title={
+                n > 0
+                  ? `마감 ${n}건 — 클릭: 이 날짜만, Shift+클릭: 여러 날짜 선택`
+                  : "Shift+클릭으로 여러 날짜 선택"
+              }
             >
               <span>{day}</span>
               {n > 0 && (
@@ -71,6 +76,7 @@ export default function MiniCalendar({ cards, selectedDay, onSelectDay }: Props)
           );
         })}
       </div>
+      <div className="cal-help">Shift+클릭 = 여러 날짜 선택</div>
     </div>
   );
 }
