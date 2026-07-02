@@ -1,33 +1,45 @@
-import { useRef, useState } from "react";
-import type { Card } from "../types";
+import { useEffect, useRef, useState } from "react";
+import type { InboxRow } from "../types";
 import { cn } from "../lib/utils";
 import { CATEGORY_META, computeDday, ddayText } from "../lib/cards";
 
-// 처리한 파일 한 건의 결과 줄.
-interface RowResult {
-  name: string; // 파일 이름
-  status: "성공" | "병합" | "이미지" | "실패";
-  message: string;
-  card?: Card | null;
-}
-
-// 📥 들어온 공문 — 공문 파일을 끌어다 놓으면 파이썬 엔진이 읽어서
-// 교무수첩 카드로 저장합니다 (같은 공문 세트는 자동으로 묶임).
+// 📥 공문 집어넣기 — 공문을 카드로 만드는 두 가지 방법:
+//   ① 자동: 폴더를 지정하면, 그 폴더에 저장되는 공문을 알아서 읽음
+//   ② 수동: 드롭 영역에 파일을 끌어다 놓음 (메신저로 받은 것 등)
 // 모든 처리는 이 PC 안에서만 일어납니다.
 export default function Inbox() {
-  const [rows, setRows] = useState<RowResult[]>([]);
+  const [rows, setRows] = useState<InboxRow[]>([]);
   const [busy, setBusy] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [withAi, setWithAi] = useState(false);
+  const [watchDir, setWatchDir] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  // 파일들을 순서대로 추출 → 카드로 저장 → 결과 줄 추가.
+  // 자동 읽기 폴더 정보 + 자동 처리 결과 구독
+  useEffect(() => {
+    window.gyomu.getWatchDir().then(setWatchDir);
+    const unsubscribe = window.gyomu.onInboxProcessed((row) => {
+      setRows((prev) => [row, ...prev]);
+    });
+    return unsubscribe;
+  }, []);
+
+  async function chooseFolder() {
+    const dir = await window.gyomu.chooseWatchFolder();
+    setWatchDir(dir);
+  }
+
+  async function clearFolder() {
+    await window.gyomu.clearWatchFolder();
+    setWatchDir(null);
+  }
+
+  // ② 수동: 파일들을 순서대로 추출 → 카드로 저장 → 결과 줄 추가.
   async function processFiles(files: FileList | File[]) {
     setBusy(true);
     for (const f of Array.from(files)) {
-      let path = "";
       try {
-        path = window.gyomu.getFilePath(f);
+        const path = window.gyomu.getFilePath(f);
         const result = await window.gyomu.extractFile(path, withAi);
         const { card, merged } = await window.gyomu.addFromExtract(result);
         const isImage = result.notebook?.is_image;
@@ -46,11 +58,7 @@ export default function Inbox() {
         ]);
       } catch (e) {
         setRows((prev) => [
-          {
-            name: f.name,
-            status: "실패",
-            message: String(e).slice(0, 300),
-          },
+          { name: f.name, status: "실패", message: String(e).slice(0, 300) },
           ...prev,
         ]);
       }
@@ -60,7 +68,40 @@ export default function Inbox() {
 
   return (
     <div style={{ flex: 1, padding: 20, minWidth: 0 }}>
-      {/* 드롭 영역 */}
+      {/* ① 자동: 공문 폴더 지정 */}
+      <div className="watch-box">
+        <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 6 }}>
+          ① 공문 폴더 자동 읽기
+        </div>
+        {watchDir ? (
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13 }}>
+              👀 감시 중: <b style={{ color: "#1e8449" }}>{watchDir}</b>
+            </span>
+            <span style={{ fontSize: 12, color: "#7f8c8d" }}>
+              이 폴더에 공문을 저장(다운로드)하기만 하면 자동으로 읽어 카드로 만듭니다.
+            </span>
+            <button className="chip" onClick={chooseFolder}>폴더 바꾸기</button>
+            <button className="chip" onClick={clearFolder}>자동 읽기 끄기</button>
+          </div>
+        ) : (
+          <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+            <span style={{ fontSize: 13, color: "#7f8c8d" }}>
+              공문을 내려받는 폴더(예: 400_학교 다운로드)를 지정해 두면,
+              앞으로 거기에 저장되는 공문을 앱이 알아서 읽습니다.
+            </span>
+            <button
+              className="chip on"
+              style={{ fontSize: 13, padding: "6px 14px" }}
+              onClick={chooseFolder}
+            >
+              📁 폴더 지정하기
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* ② 수동: 드롭 영역 */}
       <div
         className={cn("dropzone", dragOver && "over")}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -74,10 +115,10 @@ export default function Inbox() {
       >
         <div style={{ fontSize: 40 }}>📥</div>
         <div style={{ fontSize: 16, fontWeight: 600, margin: "6px 0" }}>
-          공문 파일을 여기에 끌어다 놓으세요
+          ② 공문 파일을 여기에 끌어다 놓으세요
         </div>
         <div style={{ fontSize: 13, color: "#7f8c8d" }}>
-          (클릭해서 파일을 골라도 됩니다 · 여러 개 한번에 가능)
+          다른 폴더에 받은 것, 메신저로 받은 것은 여기로 (클릭해서 골라도 됨 · 여러 개 가능)
           <br />
           지원 형식: PDF · HWP · HWPX · ODT · XLSX · XLS
         </div>
@@ -109,7 +150,7 @@ export default function Inbox() {
         </span>
       </div>
 
-      {/* 처리 결과 목록 */}
+      {/* 처리 결과 목록 (자동 + 수동 공용) */}
       {rows.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <h3 style={{ fontSize: 15 }}>처리 결과 {rows.length}건</h3>

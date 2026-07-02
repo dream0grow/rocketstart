@@ -4,7 +4,7 @@ import { cn } from "../lib/utils";
 // 지금 동작: 홈 · 들어온 공문 · 의견 보내기. 나머지는 이후 단계에서 연결.
 const TOP = [
   { key: "home", label: "🏠 홈" },
-  { key: "inbox", label: "📥 들어온 공문" },
+  { key: "inbox", label: "📥 공문 집어넣기" },
   { key: "notebook", label: "📒 교무수첩" },
   { key: "write", label: "✍ 공문 작성" },
   { key: "minutes", label: "📝 회의록" },

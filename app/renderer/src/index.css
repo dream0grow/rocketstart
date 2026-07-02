@@ -41,7 +41,14 @@
   }
   .side-item.disabled { opacity: 0.45; cursor: default; }
 
-  /* 들어온 공문 — 파일 드롭 영역 */
+  /* 공문 집어넣기 — 자동 읽기 폴더 상자 */
+  .watch-box {
+    @apply bg-white rounded-[10px] shadow-card;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  /* 공문 집어넣기 — 파일 드롭 영역 */
   .dropzone {
     @apply bg-white rounded-[10px] shadow-card;
     border: 2px dashed #b2babb;

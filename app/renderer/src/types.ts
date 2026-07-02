@@ -136,10 +136,22 @@ export interface Summary {
   overdue_n: number;
 }
 
+// 공문 집어넣기 화면의 처리 결과 한 줄 (수동 드롭·자동 읽기 공용).
+export interface InboxRow {
+  name: string;
+  status: "성공" | "병합" | "이미지" | "실패";
+  message: string;
+  card?: Card | null;
+}
+
 // preload 로 노출되는 브리지 API. (Electron ↔ React)
 export interface GyomuApi {
   getFilePath(file: File): string;
   addFromExtract(result: ExtractResult): Promise<{ card: Card | null; merged: boolean }>;
+  chooseWatchFolder(): Promise<string | null>;
+  getWatchDir(): Promise<string | null>;
+  clearWatchFolder(): Promise<void>;
+  onInboxProcessed(cb: (row: InboxRow) => void): () => void;
   listCards(): Promise<Card[]>;
   updateQuadrant(id: number, quadrant: Quadrant): Promise<void>;
   setCardDone(id: number, done: boolean): Promise<void>;

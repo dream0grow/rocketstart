@@ -75,6 +75,16 @@ function initDb(userDataDir) {
       sent INTEGER DEFAULT 0,        -- 관리자에게 보냈는지
       created_at TEXT DEFAULT (datetime('now'))
     );
+    -- 앱 설정 (예: 공문 자동 읽기 폴더 경로).
+    CREATE TABLE IF NOT EXISTS settings (
+      key TEXT PRIMARY KEY,
+      value TEXT
+    );
+    -- 이미 읽어 들인 파일 경로 (폴더 자동 읽기가 같은 파일을 두 번 안 읽게).
+    CREATE TABLE IF NOT EXISTS processed_files (
+      path TEXT PRIMARY KEY,
+      processed_at TEXT DEFAULT (datetime('now'))
+    );
   `);
   migrate();
   return db;
@@ -377,10 +387,38 @@ function markFeedbackSent() {
   db.prepare("UPDATE feedback SET sent = 1 WHERE sent = 0").run();
 }
 
+// ── 앱 설정 + 처리한 파일 기록 (폴더 자동 읽기) ────────────
+function getSetting(key) {
+  const r = db.prepare("SELECT value FROM settings WHERE key = ?").get(key);
+  return r ? r.value : null;
+}
+
+function setSetting(key, value) {
+  db.prepare(
+    "INSERT INTO settings (key, value) VALUES (?, ?) " +
+    "ON CONFLICT(key) DO UPDATE SET value = excluded.value"
+  ).run(key, value);
+}
+
+function removeSetting(key) {
+  db.prepare("DELETE FROM settings WHERE key = ?").run(key);
+}
+
+function isProcessed(filePath) {
+  return !!db.prepare("SELECT 1 FROM processed_files WHERE path = ?").get(filePath);
+}
+
+function markProcessed(filePath) {
+  db.prepare(
+    "INSERT OR IGNORE INTO processed_files (path) VALUES (?)"
+  ).run(filePath);
+}
+
 module.exports = {
   initDb, listCards, insertCard, updateQuadrant, setCardDone, updateCardClass,
   findClassOverride, count, seedCards,
   getCard, findCardByDoc, appendAttachment, promoteMain,
   listTodos, addTodo, toggleTodo, updateTodo, removeTodo,
   addFeedback, listFeedback, removeFeedback, collectOutbox, markFeedbackSent,
+  getSetting, setSetting, removeSetting, isProcessed, markProcessed,
 };

@@ -8,6 +8,17 @@ contextBridge.exposeInMainWorld("gyomu", {
   // 추출 결과를 교무수첩 카드로 저장 (공문 세트 자동 병합)
   addFromExtract: (result) =>
     ipcRenderer.invoke("cards:addFromExtract", { result }),
+
+  // ── 공문 자동 읽기 폴더 ──
+  chooseWatchFolder: () => ipcRenderer.invoke("inbox:chooseFolder"),
+  getWatchDir: () => ipcRenderer.invoke("inbox:getWatchDir"),
+  clearWatchFolder: () => ipcRenderer.invoke("inbox:clearFolder"),
+  // 자동 읽기 결과를 화면이 받아보기 (반환값 = 구독 해제 함수)
+  onInboxProcessed: (cb) => {
+    const listener = (_e, row) => cb(row);
+    ipcRenderer.on("inbox:processed", listener);
+    return () => ipcRenderer.removeListener("inbox:processed", listener);
+  },
   // 저장된 카드 목록
   listCards: () => ipcRenderer.invoke("cards:list"),
   // 카드의 아이젠하워 배치 저장 (구 기능 — 날짜별 보기로 바뀌며 미사용)
