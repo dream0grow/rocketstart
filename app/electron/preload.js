@@ -1,8 +1,13 @@
 // preload: 렌더러(React)에 안전한 브리지 API 만 노출합니다.
-// 네트워크 호출은 없습니다 (절대 원칙: 100% 로컬).
-const { contextBridge, ipcRenderer } = require("electron");
+// 공문 처리는 전부 로컬 — 네트워크는 사용자가 '의견 보내기'를 눌렀을 때만.
+const { contextBridge, ipcRenderer, webUtils } = require("electron");
 
 contextBridge.exposeInMainWorld("gyomu", {
+  // 드래그&드롭된 File 객체의 실제 경로 (Electron 32+ 는 file.path 가 없음)
+  getFilePath: (file) => webUtils.getPathForFile(file),
+  // 추출 결과를 교무수첩 카드로 저장 (공문 세트 자동 병합)
+  addFromExtract: (result) =>
+    ipcRenderer.invoke("cards:addFromExtract", { result }),
   // 저장된 카드 목록
   listCards: () => ipcRenderer.invoke("cards:list"),
   // 카드의 아이젠하워 배치 저장 (구 기능 — 날짜별 보기로 바뀌며 미사용)

@@ -224,6 +224,84 @@ function count() {
   return db.prepare("SELECT COUNT(*) AS n FROM cards").get().n;
 }
 
+function getCard(id) {
+  const r = db.prepare("SELECT * FROM cards WHERE id = ?").get(id);
+  return r ? rowToCard(r) : null;
+}
+
+// 같은 공문 세트(발신기관 + 문서번호) 카드 찾기 — 들어온 공문 병합용.
+function findCardByDoc(sender, docNumber) {
+  if (!sender || !docNumber) return null;
+  const r = db.prepare(
+    "SELECT * FROM cards WHERE sender = ? AND doc_number = ? ORDER BY id LIMIT 1"
+  ).get(sender, docNumber);
+  return r ? rowToCard(r) : null;
+}
+
+// 기존 세트 카드에 첨부 파일을 붙입니다.
+// 세트에 마감이 없는데 첨부에 있으면 그 마감을 대표로 씁니다.
+function appendAttachment(id, att, deadlineFields) {
+  const card = getCard(id);
+  if (!card) return;
+  const atts = card.attachments || [];
+  atts.push(att);
+  db.prepare("UPDATE cards SET attachments = ? WHERE id = ?")
+    .run(JSON.stringify(atts), id);
+  if (!card.deadline_iso && deadlineFields && deadlineFields.deadline_iso) {
+    db.prepare(`
+      UPDATE cards SET deadline_iso = @deadline_iso,
+        deadline_label = @deadline_label, deadline_raw = @deadline_raw,
+        d_day = @d_day, d_day_text = @d_day_text
+      WHERE id = @id
+    `).run({ id, ...deadlineFields });
+  }
+}
+
+// 본문 파일이 나중에 들어온 경우: 대표를 본문으로 교체하고,
+// 원래 대표(첨부였던 것)는 첨부 목록으로 내립니다.
+function promoteMain(id, nb, filePath) {
+  const card = getCard(id);
+  if (!card) return;
+  const atts = card.attachments || [];
+  atts.push({
+    title: card.title, kind: card.kind,
+    extension: card.extension, file_path: card.file_path,
+  });
+  db.prepare(`
+    UPDATE cards SET
+      title = @title, kind = @kind, extension = @extension,
+      sender_level = @sender_level, category = @category,
+      category_reason = @category_reason, placement = @placement,
+      task_type = @task_type, owner = @owner,
+      deadline_iso = @deadline_iso, deadline_label = @deadline_label,
+      deadline_raw = @deadline_raw, d_day = @d_day, d_day_text = @d_day_text,
+      other_deadlines = @other_deadlines, is_image = @is_image,
+      file_path = @file_path, attachments = @attachments
+    WHERE id = @id
+  `).run({
+    id,
+    title: nb.title ?? null,
+    kind: nb.kind ?? null,
+    extension: nb.extension ?? null,
+    sender_level: nb.sender_level ?? null,
+    category: nb.category ?? null,
+    category_reason: nb.category_reason ?? null,
+    placement: nb.placement ?? null,
+    task_type: nb.task_type ?? null,
+    owner: nb.owner ?? null,
+    // 본문에 마감이 없으면 기존(첨부에서 온) 마감을 유지
+    deadline_iso: nb.deadline_iso ?? card.deadline_iso ?? null,
+    deadline_label: nb.deadline_iso ? nb.deadline_label : card.deadline_label,
+    deadline_raw: nb.deadline_iso ? nb.deadline_raw : card.deadline_raw,
+    d_day: nb.deadline_iso ? nb.d_day : card.d_day,
+    d_day_text: nb.deadline_iso ? (nb.d_day_text ?? "") : (card.d_day_text ?? ""),
+    other_deadlines: JSON.stringify(nb.other_deadlines ?? []),
+    is_image: nb.is_image ? 1 : 0,
+    file_path: filePath ?? null,
+    attachments: JSON.stringify(atts),
+  });
+}
+
 // 시드: 비어 있으면 카드들을 한 번에 넣습니다 (트랜잭션).
 function seedCards(cards) {
   const insertMany = db.transaction((rows) => {
@@ -302,6 +380,7 @@ function markFeedbackSent() {
 module.exports = {
   initDb, listCards, insertCard, updateQuadrant, setCardDone, updateCardClass,
   findClassOverride, count, seedCards,
+  getCard, findCardByDoc, appendAttachment, promoteMain,
   listTodos, addTodo, toggleTodo, updateTodo, removeTodo,
   addFeedback, listFeedback, removeFeedback, collectOutbox, markFeedbackSent,
 };

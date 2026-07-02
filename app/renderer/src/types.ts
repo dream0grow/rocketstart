@@ -138,6 +138,8 @@ export interface Summary {
 
 // preload 로 노출되는 브리지 API. (Electron ↔ React)
 export interface GyomuApi {
+  getFilePath(file: File): string;
+  addFromExtract(result: ExtractResult): Promise<{ card: Card | null; merged: boolean }>;
   listCards(): Promise<Card[]>;
   updateQuadrant(id: number, quadrant: Quadrant): Promise<void>;
   setCardDone(id: number, done: boolean): Promise<void>;

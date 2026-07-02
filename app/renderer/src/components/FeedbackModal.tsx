@@ -49,11 +49,7 @@ export default function FeedbackModal({ open, onClose }: Props) {
 
   async function send() {
     const r = await window.gyomu.sendFeedback();
-    setResult(
-      r.ok
-        ? `메일 창과 파일 폴더를 열었습니다 (${r.count}건). 메일에 JSON 파일을 첨부해 보내주세요.`
-        : r.message || "보낼 내용이 없습니다."
-    );
+    setResult(r.message || (r.ok ? "보냈습니다." : "보낼 내용이 없습니다."));
     setOutbox(null);
     setItems(await window.gyomu.listFeedback());
   }
@@ -173,7 +169,7 @@ export default function FeedbackModal({ open, onClose }: Props) {
         ) : (
           <div style={{ border: "1px solid #f7dc6f", background: "#fef9e7", borderRadius: 8, padding: 12 }}>
             <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
-              📤 아래 내용이 관리자 메일로 갑니다 — 확인해 주세요
+              📤 아래 내용이 관리자 수합함으로 갑니다 — 확인해 주세요
             </div>
             <div style={{ fontSize: 12.5, maxHeight: 180, overflow: "auto", marginBottom: 8 }}>
               <div style={{ fontWeight: 600 }}>의견 {outbox.feedback.length}건</div>
@@ -208,7 +204,7 @@ export default function FeedbackModal({ open, onClose }: Props) {
                   padding: "7px 16px", cursor: "pointer", fontSize: 13,
                 }}
               >
-                확인했어요 — 메일로 보내기
+                확인했어요 — 보내기
               </button>
             </div>
           </div>
