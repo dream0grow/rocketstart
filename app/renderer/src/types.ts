@@ -23,6 +23,14 @@ export interface OtherDeadline {
   iso: string | null;
 }
 
+// 같은 공문 세트에 딸린 첨부(서식·붙임 등) — 별도 카드로 만들지 않고 묶습니다.
+export interface Attachment {
+  title: string | null;
+  kind: string | null;
+  extension: string | null;
+  file_path?: string | null;
+}
+
 // notebook = 교무수첩 카드 (MVP-3). 화면 카드의 원천 데이터.
 export interface NotebookEntry {
   title: string | null;
@@ -76,6 +84,7 @@ export interface Card extends NotebookEntry {
   quadrant: Quadrant; // (구) DB 호환용
   done?: boolean; // 처리 완료 표시
   file_path?: string | null; // 원본 공문 파일 경로 (들어온 공문에서 채움)
+  attachments?: Attachment[]; // 같은 공문 세트의 첨부(서식 등)
   ai?: AiSuggestion;
 }
 

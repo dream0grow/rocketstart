@@ -60,11 +60,33 @@ def test_task_category_report():
     assert e.owner == OWNER_MANAGER
 
 
-def test_task_category_attend_request():
-    """'참석 협조 요청'은 연수 키워드가 있어도 부장이 직접 처리할 할일형."""
+def test_task_category_attend_request_admin_focus():
+    """업무 중심(생활기록부·학업성적) 참석 협조는 부장이 직접 처리할 할일형."""
     e = build_notebook_entry(
         _fn("2026 초등 학교생활기록부 기록 및 학업성적관리 시행지침 안내 연수 참석 협조 요청"),
         _deadline("2026-07-08", "행사일"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_TASK
+    assert e.owner == OWNER_MANAGER
+
+
+def test_circulate_attend_request_student_focus():
+    """학생 지도 중심(기초학력·부진) 참석 요청은 담임 참석 → 공람형."""
+    e = build_notebook_entry(
+        _fn("2026 기초학력 부진학생 지원 방안 연수 참석 협조 요청"),
+        _deadline("2026-07-08", "행사일"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_CIRCULATE
+    assert e.owner == OWNER_TEACHERS
+
+
+def test_task_category_admin_training():
+    """업무 중심(안전지도 담당자) 연수 안내는 부장이 갈 할일형."""
+    e = build_notebook_entry(
+        _fn("2026 학교 안전지도 담당자 역량강화 연수 신청 안내"),
+        _deadline("2026-07-15", "신청기한"), "hwpx", True, "추출 성공",
         today=TODAY,
     )
     assert e.category == CATEGORY_TASK

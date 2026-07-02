@@ -88,6 +88,39 @@ export default function DetailModal({ card, onClose }: Props) {
         <Row k="마감일">{dl}</Row>
         {others && <Row k="다른 기한">{others}</Row>}
 
+        {/* 같은 공문 세트의 첨부(서식·붙임) — 별도 카드가 아니라 여기에 묶임 */}
+        {card.attachments && card.attachments.length > 0 && (
+          <div style={{ marginTop: 10 }}>
+            <div style={{ fontSize: 13, color: "#7f8c8d", marginBottom: 4 }}>
+              📎 첨부 {card.attachments.length}건 (같은 공문 세트)
+            </div>
+            <ul style={{ fontSize: 13, paddingLeft: 18, margin: 0 }}>
+              {card.attachments.map((a, i) => (
+                <li key={i} style={{ margin: "3px 0" }}>
+                  {a.title || "(제목 없음)"}
+                  {a.extension && (
+                    <span style={{ color: "#95a5a6", fontSize: 11.5 }}>
+                      {" "}.{a.extension}
+                    </span>
+                  )}
+                  {a.file_path && (
+                    <button
+                      onClick={() => window.gyomu.openFile(a.file_path!)}
+                      style={{
+                        marginLeft: 6, border: "1px solid #d5dbdb",
+                        background: "#fff", borderRadius: 6, fontSize: 11,
+                        padding: "0 6px", cursor: "pointer",
+                      }}
+                    >
+                      열기
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* 원본 파일·첨부 열기 — 들어온 공문에서 넣은 공문부터 경로가 채워집니다 */}
         <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
           {card.file_path ? (

@@ -9,8 +9,9 @@ let db;
 
 // 스키마 버전. 분류 규칙·컬럼이 바뀌면 올립니다.
 //   v2: 5성격(공람형) 도입, owner/done/file_path 컬럼, todos 테이블.
-//       기존 시드 카드는 옛 분류라서 지우고 새 시드로 다시 채웁니다.
-const SCHEMA_VERSION = 2;
+//   v3: 공문 세트 묶기 — 본문+첨부(서식 등)를 카드 1장으로, attachments 컬럼.
+//       시드가 바뀌므로 카드를 지우고 새 시드로 다시 채웁니다.
+const SCHEMA_VERSION = 3;
 
 function initDb(userDataDir) {
   fs.mkdirSync(userDataDir, { recursive: true });
@@ -42,6 +43,7 @@ function initDb(userDataDir) {
       quadrant TEXT,          -- (구) 아이젠하워 배치 — 날짜별 보기로 바뀌며 미사용
       owner TEXT,             -- 처리 주체 힌트: 부장 / 담임(공람)
       file_path TEXT,         -- 원본 공문 파일 경로 (들어온 공문에서 채움)
+      attachments TEXT,       -- 같은 공문 세트의 첨부(서식 등) JSON 목록
       done INTEGER DEFAULT 0, -- 처리 완료 표시
       created_at TEXT DEFAULT (datetime('now'))
     );
@@ -63,20 +65,19 @@ function migrate() {
   const v = db.pragma("user_version", { simple: true });
   if (v >= SCHEMA_VERSION) return;
 
-  if (v < 2) {
-    // v1 → v2: 컬럼 추가 (이미 있으면 무시).
-    for (const ddl of [
-      "ALTER TABLE cards ADD COLUMN owner TEXT",
-      "ALTER TABLE cards ADD COLUMN file_path TEXT",
-      "ALTER TABLE cards ADD COLUMN done INTEGER DEFAULT 0",
-    ]) {
-      try { db.exec(ddl); } catch (_e) { /* 새 DB 는 이미 컬럼 보유 */ }
-    }
-    // 옛 4성격 시드 카드는 새 5성격 시드로 교체합니다.
-    // (아직 시드 데이터 단계라 사용자 데이터 손실이 없습니다.
-    //  '들어온 공문'으로 실제 파일을 넣기 시작하면 이 방식은 쓰지 않습니다.)
-    db.exec("DELETE FROM cards");
+  // 컬럼 추가 (이미 있으면 무시).
+  for (const ddl of [
+    "ALTER TABLE cards ADD COLUMN owner TEXT",
+    "ALTER TABLE cards ADD COLUMN file_path TEXT",
+    "ALTER TABLE cards ADD COLUMN done INTEGER DEFAULT 0",
+    "ALTER TABLE cards ADD COLUMN attachments TEXT",
+  ]) {
+    try { db.exec(ddl); } catch (_e) { /* 새 DB 는 이미 컬럼 보유 */ }
   }
+  // 옛 분류/낱개 카드 시드는 새 시드(공문 세트)로 교체합니다.
+  // (아직 시드 데이터 단계라 사용자 데이터 손실이 없습니다.
+  //  '들어온 공문'으로 실제 파일을 넣기 시작하면 이 방식은 쓰지 않습니다.)
+  db.exec("DELETE FROM cards");
 
   db.pragma(`user_version = ${SCHEMA_VERSION}`);
 }
@@ -107,6 +108,7 @@ function rowToCard(r) {
     quadrant: r.quadrant,
     owner: r.owner,
     file_path: r.file_path,
+    attachments: r.attachments ? JSON.parse(r.attachments) : [],
     done: !!r.done,
   };
 }
@@ -123,13 +125,13 @@ function insertCard(c) {
       category, category_reason, placement, task_type,
       deadline_iso, deadline_label, deadline_raw, d_day, d_day_text,
       other_deadlines, stale_dropped, is_image, needs_review, quadrant,
-      owner, file_path, done
+      owner, file_path, attachments, done
     ) VALUES (
       @title, @sender, @doc_number, @kind, @extension, @sender_level,
       @category, @category_reason, @placement, @task_type,
       @deadline_iso, @deadline_label, @deadline_raw, @d_day, @d_day_text,
       @other_deadlines, @stale_dropped, @is_image, @needs_review, @quadrant,
-      @owner, @file_path, @done
+      @owner, @file_path, @attachments, @done
     )
   `);
   return stmt.run({
@@ -155,6 +157,7 @@ function insertCard(c) {
     quadrant: c.quadrant ?? "기타",
     owner: c.owner ?? null,
     file_path: c.file_path ?? null,
+    attachments: JSON.stringify(c.attachments ?? []),
     done: c.done ? 1 : 0,
   }).lastInsertRowid;
 }
