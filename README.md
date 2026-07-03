@@ -121,3 +121,9 @@ python verify_ai.py "공문파일.hwp"                # 실제 Ollama로 검증
 ## 다음 단계 (설계서 개발 순서)
 
 - **MVP-5**: 홈 대시보드 (공문 4성격 자동 배치)
+
+---
+
+> 📱 이 저장소에 있던 **「100시간 공부」 앱**(`study/`·`ios-app/`)은
+> 전용 저장소 [dream0grow/100study](https://github.com/dream0grow/100study)로 이사했습니다.
+> 공부 앱 관련 작업은 그쪽에서 진행하세요. (웹: https://dream0grow.github.io/100study/)
