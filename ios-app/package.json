@@ -1,0 +1,19 @@
+{
+  "name": "study-ios",
+  "private": true,
+  "version": "1.0.0",
+  "description": "「100시간 공부」 웹앱을 아이폰 앱으로 포장하는 Capacitor 프로젝트",
+  "scripts": {
+    "copy": "node scripts/copy-web.mjs",
+    "sync": "npm run copy && cap sync ios",
+    "open": "cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0",
+    "@capacitor/local-notifications": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}
