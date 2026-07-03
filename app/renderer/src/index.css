@@ -39,6 +39,29 @@
     border-top: 1px solid #465c70;
     margin: 10px 0;
   }
+  .side-item.disabled { opacity: 0.45; cursor: default; }
+
+  /* 공문 집어넣기 — 자동 읽기 폴더 상자 */
+  .watch-box {
+    @apply bg-white rounded-[10px] shadow-card;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+
+  /* 공문 집어넣기 — 파일 드롭 영역 */
+  .dropzone {
+    @apply bg-white rounded-[10px] shadow-card;
+    border: 2px dashed #b2babb;
+    padding: 34px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .dropzone:hover { border-color: #1abc9c; }
+  .dropzone.over {
+    border-color: #1abc9c;
+    background: #eafaf7;
+  }
 
   /* 상단 요약 띠 */
   .strip {
@@ -50,6 +73,20 @@
   }
   .strip b { font-size: 20px; }
   .strip .over { color: #e74c3c; }
+
+  /* 요약 띠 항목 = 클릭 필터 버튼 */
+  .strip-item {
+    background: none;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 8px;
+  }
+  .strip-item:hover { background: #f0f3f4; }
+  .strip-item.on { background: #eafaf7; outline: 2px solid #1abc9c; }
+  .strip-item.over { color: #e74c3c; }
 
   /* 아이젠하워 칸 */
   .q {
@@ -125,12 +162,219 @@
   .left-green h3 { color: #27ae60; }
   .left-gray h3 { color: #95a5a6; }
 
-  /* 칸이 드래그 대상일 때 */
-  .q.drop-over { outline: 2px dashed #1abc9c; outline-offset: -4px; }
-
   .note {
     font-size: 12px;
     color: #95a5a6;
     margin-top: 14px;
   }
+
+  /* ── 날짜별 칸반 보드 (전체 폭) ────────────────────── */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+  }
+
+  /* 필터 칩 + 검색 한 줄 */
+  .filter-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  /* 완료된 카드는 흐리게 */
+  .card.done { opacity: 0.45; }
+  .card.done .t { text-decoration: line-through; }
+  .card .sender {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 160px;
+  }
+  .tag.owner-me { background: #fdebd0; color: #af601a; font-weight: 600; }
+  .tag.owner-teachers { background: #d6eaf8; color: #21618c; font-weight: 600; }
+
+  /* ── 필터 칩 ──────────────────────────────────────── */
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip {
+    @apply cursor-pointer select-none;
+    background: #fff;
+    border: 1px solid #d5dbdb;
+    color: #34495e;
+    border-radius: 14px;
+    padding: 3px 11px;
+    font-size: 12.5px;
+  }
+  .chip:hover { border-color: #95a5a6; }
+  .chip.on { background: #34495e; color: #fff; border-color: #34495e; }
+  .chip.mini { padding: 1px 8px; font-size: 11.5px; }
+  .chip.p-high.on { background: #c0392b; border-color: #c0392b; }
+  .chip.p-mid.on { background: #b7950b; border-color: #b7950b; }
+  .chip.p-low.on { background: #7f8c8d; border-color: #7f8c8d; }
+
+  .search {
+    @apply bg-white;
+    border: 1px solid #d5dbdb;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13.5px;
+    width: 260px;
+  }
+  .search:focus { outline: 2px solid #1abc9c33; border-color: #1abc9c; }
+
+  /* ── 미니 캘린더 ──────────────────────────────────── */
+  .cal {
+    @apply bg-white rounded-[10px] shadow-card;
+    padding: 12px;
+    width: 252px;
+    flex-shrink: 0;
+  }
+  .cal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+  .cal-head button {
+    border: 1px solid #d5dbdb;
+    background: #fff;
+    border-radius: 6px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .cal-wd {
+    text-align: center;
+    font-size: 11px;
+    color: #7f8c8d;
+    padding: 2px 0;
+  }
+  .cal-wd.sun { color: #e74c3c; }
+  .cal-cell {
+    position: relative;
+    text-align: center;
+    font-size: 12px;
+    padding: 4px 0 12px;
+    border-radius: 6px;
+    cursor: default;
+    min-height: 30px;
+  }
+  .cal-cell.has-deadline { cursor: pointer; background: #fef9e7; }
+  .cal-cell.has-deadline:hover { background: #fcf3cf; }
+  .cal-cell.today { outline: 2px solid #1abc9c; outline-offset: -2px; }
+  .cal-cell.selected { background: #d1f2eb !important; font-weight: bold; }
+  .cal-dot {
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e67e22;
+    color: #fff;
+    font-size: 9px;
+    border-radius: 8px;
+    padding: 0 4px;
+    line-height: 12px;
+  }
+  .cal-dot.over { background: #c0392b; }
+  .cal-help {
+    margin-top: 6px;
+    font-size: 10.5px;
+    color: #b2babb;
+    text-align: center;
+  }
+
+  /* ── 투두리스트 패널 (상단, 크게) ─────────────────── */
+  .todo-panel {
+    @apply bg-white rounded-[10px] shadow-card;
+    padding: 16px;
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .todo-panel.drop-ready {
+    outline: 3px dashed #1abc9c;
+    outline-offset: -6px;
+    background: #eafaf7;
+  }
+  .todo-panel h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #eee;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .todo-panel h3 .hint {
+    font-size: 11.5px;
+    color: #95a5a6;
+    font-weight: normal;
+  }
+  .todo-input { display: flex; gap: 6px; margin-bottom: 8px; }
+  .todo-input input {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid #d5dbdb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+  }
+  .todo-input input:focus { outline: 2px solid #1abc9c33; border-color: #1abc9c; }
+  .todo-input select {
+    border: 1px solid #d5dbdb;
+    border-radius: 8px;
+    font-size: 12px;
+    padding: 0 4px;
+    background: #fff;
+  }
+  .todo-input button {
+    background: #1abc9c;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  .todo-input button:hover { background: #17a589; }
+  .todo-filters { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+  .todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    overflow-y: auto;
+    max-height: 190px; /* 캘린더와 비슷한 높이 — 넘치면 스크롤 */
+  }
+  .todo-empty { color: #bbb; font-size: 13px; padding: 12px 0; }
+  .todo-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fdfdfd;
+  }
+  .todo-item .txt { flex: 1; min-width: 0; word-break: break-all; }
+  .todo-item .txt.clickable { cursor: pointer; }
+  .todo-item .txt.clickable:hover { color: #2471a3; text-decoration: underline; }
+  .todo-item.done .txt { text-decoration: line-through; color: #b2babb; }
+  .todo-item .del {
+    border: none;
+    background: none;
+    color: #d5dbdb;
+    cursor: pointer;
+    font-size: 12px;
+  }
+  .todo-item .del:hover { color: #e74c3c; }
 }

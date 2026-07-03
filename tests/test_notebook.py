@@ -1,8 +1,9 @@
 """
 교무수첩 항목(카드) 생성 테스트 (MVP-3)
 
-공문 4성격 분류(할일형/배포형/참고형/규정형)와 D-day 계산을 검증합니다.
-설계서 6장 + 교무수첩 양식 v2 문서의 실제 예시로 확인합니다.
+공문 5성격 분류(할일형/공람형/배포형/참고형/규정형)·처리 주체(owner)·
+D-day 계산을 검증합니다. 설계서 6장 + 교무수첩 양식 v2 + 사용자 피드백
+(2026-07: 공람형 신설, 서식 제외, 부장 처리 표시) 예시로 확인합니다.
 """
 
 import os
@@ -13,7 +14,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from src.extractor import (
     build_notebook_entry,
-    CATEGORY_TASK, CATEGORY_DISTRIBUTE, CATEGORY_REFERENCE, CATEGORY_RULE,
+    CATEGORY_TASK, CATEGORY_CIRCULATE, CATEGORY_DISTRIBUTE,
+    CATEGORY_REFERENCE, CATEGORY_RULE,
+    OWNER_MANAGER, OWNER_TEACHERS,
 )
 
 TODAY = date(2026, 7, 1)  # 테스트 기준 '오늘' (설계 맥락과 동일)
@@ -33,16 +36,74 @@ def _deadline(iso, label="신청기한", raw="2026. 7. 3."):
     }
 
 
-def test_task_category_when_deadline():
-    """마감일이 있으면 할일형, D-day 가 계산되어야 한다."""
+def test_circulate_category_teacher_training():
+    """교사 대상 연수 신청 안내는 공람형 — 담임들에게 공람으로 알림."""
     e = build_notebook_entry(
         _fn("2026 다문화교육 지원교사 연수 참가 신청 안내"),
         _deadline("2026-07-03"), "odt", True, "추출 성공", today=TODAY,
     )
-    assert e.category == CATEGORY_TASK
-    assert e.d_day == 2
+    assert e.category == CATEGORY_CIRCULATE
+    assert e.owner == OWNER_TEACHERS
+    assert e.d_day == 2               # 신청기한 D-day 는 그대로 유지
     assert e.d_day_text == "D-2"
     assert e.task_type == "연수/교육"
+
+
+def test_task_category_report():
+    """'결과 보고'류는 반드시 처리해야 하는 할일형 — 부장 처리."""
+    e = build_notebook_entry(
+        _fn("2026학년도 상반기 장기미인정결석학생 정기점검 결과 보고"),
+        _deadline("2026-07-10", "제출기한"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_TASK
+    assert e.owner == OWNER_MANAGER
+
+
+def test_task_category_attend_request_admin_focus():
+    """업무 중심(생활기록부·학업성적) 참석 협조는 부장이 직접 처리할 할일형."""
+    e = build_notebook_entry(
+        _fn("2026 초등 학교생활기록부 기록 및 학업성적관리 시행지침 안내 연수 참석 협조 요청"),
+        _deadline("2026-07-08", "행사일"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_TASK
+    assert e.owner == OWNER_MANAGER
+
+
+def test_circulate_attend_request_student_focus():
+    """학생 지도 중심(기초학력·부진) 참석 요청은 담임 참석 → 공람형."""
+    e = build_notebook_entry(
+        _fn("2026 기초학력 부진학생 지원 방안 연수 참석 협조 요청"),
+        _deadline("2026-07-08", "행사일"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_CIRCULATE
+    assert e.owner == OWNER_TEACHERS
+
+
+def test_task_category_admin_training():
+    """업무 중심(안전지도 담당자) 연수 안내는 부장이 갈 할일형."""
+    e = build_notebook_entry(
+        _fn("2026 학교 안전지도 담당자 역량강화 연수 신청 안내"),
+        _deadline("2026-07-15", "신청기한"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_TASK
+    assert e.owner == OWNER_MANAGER
+
+
+def test_form_attachment_is_not_task():
+    """'서식1.' 로 시작하는 첨부 서식은 마감일이 있어도 할 일이 아니다."""
+    e = build_notebook_entry(
+        _fn("서식1. (초중고 작성용) 2026학년도 상반기 장기미인정결석학생 정기점검 결과 보고",
+            kind="첨부"),
+        _deadline("2026-07-10", "제출기한"), "hwpx", True, "추출 성공",
+        today=TODAY,
+    )
+    assert e.category == CATEGORY_REFERENCE
+    assert e.owner is None
+    assert "서식" in e.category_reason
 
 
 def test_rule_category_regulation():
@@ -138,7 +199,7 @@ def test_recent_overdue_still_task():
         "deadlines": [{"iso": "2026-03-06", "label": "신청기한", "raw": "2026. 3. 6."}],
         "all_dates": [],
     }
-    e = build_notebook_entry(_fn("연수 신청 안내"), di,
+    e = build_notebook_entry(_fn("학교 안전 점검 결과 제출"), di,
                              "odt", True, "추출 성공", today=TODAY)
     assert e.category == CATEGORY_TASK
     assert e.deadline_iso == "2026-03-06"

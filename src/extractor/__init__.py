@@ -7,7 +7,9 @@ from .deadline_parser import (
 )
 from .notebook import (
     build_notebook_entry, NotebookEntry,
-    CATEGORY_TASK, CATEGORY_DISTRIBUTE, CATEGORY_REFERENCE, CATEGORY_RULE,
+    CATEGORY_TASK, CATEGORY_CIRCULATE, CATEGORY_DISTRIBUTE,
+    CATEGORY_REFERENCE, CATEGORY_RULE,
+    OWNER_MANAGER, OWNER_TEACHERS,
 )
 
 __all__ = [
@@ -15,5 +17,7 @@ __all__ = [
     "extract_deadlines", "DeadlineResult", "DateMention",
     "LABEL_APPLY", "LABEL_SUBMIT", "LABEL_DEADLINE", "LABEL_EVENT", "LABEL_REFERENCE",
     "build_notebook_entry", "NotebookEntry",
-    "CATEGORY_TASK", "CATEGORY_DISTRIBUTE", "CATEGORY_REFERENCE", "CATEGORY_RULE",
+    "CATEGORY_TASK", "CATEGORY_CIRCULATE", "CATEGORY_DISTRIBUTE",
+    "CATEGORY_REFERENCE", "CATEGORY_RULE",
+    "OWNER_MANAGER", "OWNER_TEACHERS",
 ]

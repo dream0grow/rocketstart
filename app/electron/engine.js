@@ -10,9 +10,13 @@ const fs = require("node:fs");
 // src/ 코어가 있는 저장소 루트 (app/ 의 상위).
 const REPO_ROOT = path.resolve(__dirname, "..", "..");
 
-// 사용할 파이썬 실행 파일 (환경변수로 덮어쓰기 가능).
+// 사용할 파이썬 실행 파일 (환경변수 GYOMU_PYTHON 으로 덮어쓰기 가능).
+// Windows: python.org 설치본은 `python`(과 `py` 런처)만 제공하고 `python3` 는
+//   없는 경우가 많습니다. 그래서 Windows 에서는 기본값을 `python` 으로 둡니다.
+// macOS/Linux: 관례대로 `python3` 를 씁니다.
 function pythonBin() {
-  return process.env.GYOMU_PYTHON || "python3";
+  if (process.env.GYOMU_PYTHON) return process.env.GYOMU_PYTHON;
+  return process.platform === "win32" ? "python" : "python3";
 }
 
 // 파일 1개를 추출 → §2 데이터 계약 JSON 객체 반환.
