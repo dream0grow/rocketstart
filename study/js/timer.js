@@ -91,6 +91,12 @@ App.timer = (function () {
     endTarget = Date.now() + remainingMs;
     // 시작 제스처 안에서 오디오/화면잠금 준비
     App.beep.unlock();
+    // 아이폰 앱에서는 '끝나는 시각'에 울릴 예약 알림도 걸어둡니다.
+    // (웹 브라우저에서는 App.notify가 조용히 아무 일도 하지 않습니다.)
+    if (App.notify) {
+      App.notify.init(); // 첫 실행이면 알림 권한 팝업
+      App.notify.schedule(endTarget, mode);
+    }
     const s = App.store.getSettings();
     if (s.keepAwake) App.wakelock.request();
     startTicking();
@@ -107,12 +113,16 @@ App.timer = (function () {
       accumulatedSec += (Date.now() - segStart) / 1000;
     }
     stopTicking();
+    // 멈췄으니 예약해 둔 종료 알림도 취소 (안 하면 멈췄는데도 알림이 울립니다)
+    if (App.notify) App.notify.cancel();
     App.wakelock.release();
     render();
   }
 
   // 정지(세션 종료) — 공부 중이었다면 그때까지 공부한 시간은 기록에 저장
   function stop() {
+    // 세션을 끝내니 예약해 둔 종료 알림도 취소
+    if (App.notify) App.notify.cancel();
     if (running && mode === "focus") {
       accumulatedSec += (Date.now() - segStart) / 1000;
     }

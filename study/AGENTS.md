@@ -26,6 +26,7 @@
   │   ├── timer.js          뽀모도로 타이머 엔진(집중↔휴식↔긴 휴식)
   │   ├── wakelock.js       화면 켜두기(Screen Wake Lock)
   │   ├── beep.js           완료음(Web Audio)
+  │   ├── notify.js         타이머 종료 예약 알림 — Capacitor 앱에서만 동작, 웹에선 무동작(no-op)
   │   ├── progress.js       진행 화면 + 최근 7일 막대그래프
   │   ├── calendar.js       달력 + 날짜별 성찰 메모
   │   ├── settings.js       설정 + 백업(내보내기/가져오기)
@@ -69,6 +70,9 @@
   공개 주소: `https://dream0grow.github.io/rocketstart/`
 - **코드를 바꾸면** `sw.js`의 `CACHE = "study-vN"` 버전을 **한 단계 올리세요**(예: v2 → v3).
   안 그러면 이미 설치한 기기가 예전 파일을 계속 씁니다.
+- **아이폰 네이티브 앱**: 저장소의 `ios-app/` 폴더가 이 웹앱을 Capacitor로 포장합니다.
+  `study/`를 고치면 맥에서 `cd ios-app && npm run sync` 후 Xcode로 다시 설치하면 반영됩니다.
+  자세한 절차는 `ios-app/README.md` 참고.
 
 ## 6. 작업 방식
 - **새 브랜치**에서 작업 → **PR 생성**. `main`에 직접 커밋 금지.
