@@ -13,7 +13,10 @@ App.store = (function () {
 
   // 설정 기본값 — 앱에서 바꿀 수 있습니다.
   const DEFAULT_SETTINGS = {
-    focusMinutes: 25,     // 한 번 공부(뽀모도로) 길이 (5분 단위 5~30)
+    focusMinutes: 25,     // 한 번 공부(뽀모도로) 길이(분) — 예전 버전과의 호환용
+    // focusSeconds: 초 단위 공부 길이. 미세 조절(+30초 등)을 쓰면 여기에 저장됩니다.
+    // 기본값을 두지 않는 이유: 예전 사용자의 focusMinutes 설정을 덮어쓰지 않기 위해서예요.
+    // 읽을 때는 항상 getFocusSeconds()를 쓰세요. (focusSeconds가 없으면 focusMinutes×60)
     breakAfterN: 4,       // 뽀모도로 몇 회 후 휴식할지
     breakMinutes: 10,     // (짧은) 휴식 길이(분)
     longBreakMinutes: 20, // 긴 휴식 길이(분)
@@ -21,6 +24,7 @@ App.store = (function () {
     goalHours: 100,       // 목표 시간
     beepEnabled: true,    // 완료음 사용
     beepType: "beep",     // 완료음 종류: "beep"(삐삐) | "bell"(맑은 종) | "chime"(차임)
+    beepVolume: 1,        // 완료음 크기 (0.1 ~ 1, 1이 최대)
     vibrateEnabled: true, // 진동 사용 (지원 기기만)
     keepAwake: true,      // 화면 켜두기 사용
   };
@@ -66,6 +70,17 @@ App.store = (function () {
     data.settings = { ...data.settings, ...patch };
     save(data);
     return data.settings;
+  }
+
+  // 공부 길이를 '초'로 돌려줍니다.
+  // 미세 조절로 저장된 focusSeconds가 있으면 그걸 쓰고,
+  // 없으면 예전 방식(focusMinutes×60)을 씁니다. → 예전 사용자 설정도 그대로 동작.
+  function getFocusSeconds() {
+    const s = getSettings();
+    if (typeof s.focusSeconds === "number" && s.focusSeconds >= 30) {
+      return s.focusSeconds;
+    }
+    return (s.focusMinutes || 25) * 60;
   }
 
   // --- 공부 세션 ---
@@ -230,6 +245,7 @@ App.store = (function () {
     load,
     save,
     getSettings,
+    getFocusSeconds,
     updateSettings,
     addSession,
     getReflection,

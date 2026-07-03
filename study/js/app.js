@@ -102,29 +102,72 @@ App.timerView = (function () {
     updatePickerSelected();
   }
 
-  // 5~30분(5분 단위) 버튼 만들기
+  // 초 → "25분" / "1분 30초" / "50초" 로 읽기 좋게
+  function fmtDuration(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    if (m > 0 && s > 0) return m + "분 " + s + "초";
+    if (m > 0) return m + "분";
+    return s + "초";
+  }
+
+  // 공부 시간 선택 만들기: 빠른 선택(5분 단위) + 미세 조절(±30초/±1분)
   function buildPicker() {
     const box = App.util.$("#focus-picker");
-    box.innerHTML = "<span class='picker-label'>공부 시간</span>";
+    box.innerHTML =
+      "<span class='picker-label' id='picker-label'>공부 시간</span>";
+
+    // 빠른 선택 버튼 (누르면 그 시간으로 딱 맞춤)
     [5, 10, 15, 20, 25, 30].forEach((min) => {
       const b = document.createElement("button");
       b.className = "chip";
       b.dataset.min = min;
       b.textContent = min + "분";
       b.addEventListener("click", () => {
-        App.store.updateSettings({ focusMinutes: min });
+        App.store.updateSettings({ focusSeconds: min * 60, focusMinutes: min });
         App.timer.goIdle(); // 대기 시간 새 길이로 갱신
       });
       box.appendChild(b);
     });
+
+    // 미세 조절 버튼 (지금 시간에서 더하거나 빼기 — 예: 25분 → +30초 → 25분 30초)
+    const fine = document.createElement("div");
+    fine.className = "picker-fine";
+    [
+      { label: "−1분", delta: -60 },
+      { label: "−30초", delta: -30 },
+      { label: "+30초", delta: 30 },
+      { label: "+1분", delta: 60 },
+    ].forEach((item) => {
+      const b = document.createElement("button");
+      b.className = "chip fine";
+      b.textContent = item.label;
+      b.addEventListener("click", () => {
+        const cur = App.store.getFocusSeconds();
+        // 최소 30초, 최대 120분 사이로만 조절되게 막아둡니다.
+        const next = Math.min(7200, Math.max(30, cur + item.delta));
+        App.store.updateSettings({
+          focusSeconds: next,
+          focusMinutes: Math.round(next / 60), // 예전 필드도 비슷하게 맞춰둠
+        });
+        App.timer.goIdle();
+      });
+      fine.appendChild(b);
+    });
+    box.appendChild(fine);
   }
+
   function updatePickerSelected() {
-    const cur = App.store.getSettings().focusMinutes;
+    const cur = App.store.getFocusSeconds();
+    // 빠른 선택 버튼 강조: 현재 길이와 정확히 같은 것만 켜짐
     document
-      .querySelectorAll("#focus-picker .chip")
+      .querySelectorAll("#focus-picker .chip[data-min]")
       .forEach((c) =>
-        c.classList.toggle("on", Number(c.dataset.min) === cur)
+        c.classList.toggle("on", Number(c.dataset.min) * 60 === cur)
       );
+    // 라벨에 현재 길이 표시 (예: "공부 시간 · 1분 30초")
+    const label = App.util.$("#picker-label");
+    if (label) label.textContent = "공부 시간 · " + fmtDuration(cur);
   }
 
   function init() {

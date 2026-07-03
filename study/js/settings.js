@@ -20,6 +20,13 @@ App.settings = (function () {
     const beepTypeEl = App.util.$("#set-beep-type");
     if (beepTypeEl) beepTypeEl.value = s.beepType || "beep";
 
+    // 완료음 크기 슬라이더 (저장값 0.1~1 → 화면값 10~100)
+    const beepVolEl = App.util.$("#set-beep-vol");
+    if (beepVolEl) {
+      const vol = typeof s.beepVolume === "number" ? s.beepVolume : 1;
+      beepVolEl.value = Math.round(vol * 100);
+    }
+
     // 진동 토글 — 지원 기기에서만 행 표시
     const vibrateRow = App.util.$("#set-vibrate-row");
     if (vibrateRow) {
@@ -69,6 +76,19 @@ App.settings = (function () {
       beepTypeEl.addEventListener("change", (e) => {
         App.store.updateSettings({ beepType: e.target.value });
         // 완료음이 켜져 있을 때만 미리 듣기
+        if (App.store.getSettings().beepEnabled) {
+          App.beep.unlock(); // iOS 오디오 잠금 해제 (제스처 안에서 호출)
+          App.beep.play();
+        }
+      });
+    }
+
+    // 완료음 크기 — 손을 떼면 저장하고 바로 미리 들려줍니다 (크기 감 잡기용)
+    const beepVolEl = App.util.$("#set-beep-vol");
+    if (beepVolEl) {
+      beepVolEl.addEventListener("change", (e) => {
+        const vol = Math.min(100, Math.max(10, parseInt(e.target.value, 10) || 100)) / 100;
+        App.store.updateSettings({ beepVolume: vol });
         if (App.store.getSettings().beepEnabled) {
           App.beep.unlock(); // iOS 오디오 잠금 해제 (제스처 안에서 호출)
           App.beep.play();

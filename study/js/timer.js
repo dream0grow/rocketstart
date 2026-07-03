@@ -65,9 +65,9 @@ App.timer = (function () {
 
   // 공부 세션 시작 (대기 상태에서 '시작' 버튼)
   function startFocus() {
-    const s = App.store.getSettings();
     mode = "focus";
-    durationMs = s.focusMinutes * 60 * 1000;
+    // 초 단위 길이 사용 (미세 조절 지원 — 예: 1분 30초)
+    durationMs = App.store.getFocusSeconds() * 1000;
     remainingMs = durationMs;
     accumulatedSec = 0;
     resume();
@@ -166,8 +166,7 @@ App.timer = (function () {
     mode = "idle";
     running = false;
     breakIsLong = false;
-    const s = App.store.getSettings();
-    durationMs = s.focusMinutes * 60 * 1000;
+    durationMs = App.store.getFocusSeconds() * 1000;
     remainingMs = durationMs;
     accumulatedSec = 0;
     render();

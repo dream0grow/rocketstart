@@ -54,11 +54,16 @@ App.beep = (function () {
     }
   });
 
-  // 설정에서 현재 선택된 완료음 종류와 진동 여부를 가져옵니다.
+  // 설정에서 완료음 종류·크기·켬끔·진동 여부를 가져옵니다.
   function getOptions() {
     const s = App.store.getSettings();
+    // 크기(beepVolume)는 0.1~1 사이 숫자. 잘못된 값이 있어도 안전하게 1로.
+    let vol = typeof s.beepVolume === "number" ? s.beepVolume : 1;
+    vol = Math.min(1, Math.max(0.1, vol));
     return {
+      enabled: s.beepEnabled !== false,
       type: s.beepType || "beep",
+      volume: vol,
       vibrate: !!s.vibrateEnabled,
     };
   }
@@ -66,14 +71,15 @@ App.beep = (function () {
   // --- 음색별 재생 함수 ---
 
   // 삐삐 (기본): 880Hz 사인파 두 번
-  function playBeep(now) {
+  // vol: 크기 배율(0.1~1). 최대일 때 예전보다 3배 큽니다.
+  function playBeep(now, vol) {
     [0, 0.18].forEach((offset) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = 880; // 라(A5)
       gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.3, now + offset + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.9 * vol, now + offset + 0.02);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.15);
       osc.connect(gain).connect(ctx.destination);
       osc.start(now + offset);
@@ -82,14 +88,14 @@ App.beep = (function () {
   }
 
   // 맑은 종: 1320Hz(E6) 사인파, 빠른 공격 + 긴 감쇠
-  function playBell(now) {
+  function playBell(now, vol) {
     [0, 0.35].forEach((offset) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.value = 1320; // 미(E6) — 맑고 높은 종소리
       gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.35, now + offset + 0.01); // 빠른 공격
+      gain.gain.exponentialRampToValueAtTime(1.0 * vol, now + offset + 0.01); // 빠른 공격
       gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.5); // 긴 여운
       osc.connect(gain).connect(ctx.destination);
       osc.start(now + offset);
@@ -98,7 +104,7 @@ App.beep = (function () {
   }
 
   // 부드러운 차임: 528Hz(도#) 삼각파, 느린 공격 + 매우 긴 여운
-  function playChime(now) {
+  function playChime(now, vol) {
     [0, 0.55, 1.1].forEach((offset) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -107,7 +113,7 @@ App.beep = (function () {
       const freqs = [528, 660, 792];
       osc.frequency.value = freqs[Math.round(offset / 0.55)] || 528;
       gain.gain.setValueAtTime(0.0001, now + offset);
-      gain.gain.exponentialRampToValueAtTime(0.2, now + offset + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.6 * vol, now + offset + 0.05);
       gain.gain.exponentialRampToValueAtTime(0.0001, now + offset + 0.8); // 긴 여운
       osc.connect(gain).connect(ctx.destination);
       osc.start(now + offset);
@@ -128,27 +134,30 @@ App.beep = (function () {
   }
 
   // 설정된 음색으로 실제 소리를 스케줄합니다. (컨텍스트가 깨어 있다는 전제)
-  function playTones(type) {
+  function playTones(type, vol) {
     try {
       const now = ctx.currentTime;
       if (type === "bell") {
-        playBell(now);
+        playBell(now, vol);
       } else if (type === "chime") {
-        playChime(now);
+        playChime(now, vol);
       } else {
-        playBeep(now); // 기본: "beep"
+        playBeep(now, vol); // 기본: "beep"
       }
     } catch (e) {
       /* 무시 */
     }
   }
 
-  // 완료음 재생 (설정에 따라 음색 선택 + 진동)
+  // 완료음 재생 (설정에 따라 음색·크기 선택 + 진동)
   function play() {
     const opts = getOptions();
 
     // 진동 먼저 (소리보다 즉각적인 피드백)
     if (opts.vibrate) vibrate();
+
+    // 설정에서 완료음을 꺼뒀으면 소리는 건너뜀 (진동만)
+    if (!opts.enabled) return;
 
     // 오디오 컨텍스트가 없으면 소리 없이 종료
     if (!ctx) return;
@@ -158,12 +167,12 @@ App.beep = (function () {
     if (ctx.state !== "running") {
       ctx
         .resume()
-        .then(() => playTones(opts.type))
+        .then(() => playTones(opts.type, opts.volume))
         .catch(() => {
           /* 못 깨우면 이번 완료음은 포기 — 진동은 이미 울렸습니다 */
         });
     } else {
-      playTones(opts.type);
+      playTones(opts.type, opts.volume);
     }
   }
 
