@@ -221,6 +221,8 @@ npm run sync
 | "신뢰하지 않는 개발자" | 아이폰 설정 → 일반 → VPN 및 기기 관리 → 신뢰 |
 | 일주일 뒤 앱이 안 열림 | 무료 서명 만료. Xcode에서 ▶ 한 번 더 (8단계 참고) |
 | 앱은 뜨는데 화면이 하얗다 | `npm run sync`를 빼먹었을 가능성. 실행 후 다시 Run |
+| 빌드 실패: `Sandbox: bash(...) deny(1) file-read-data ... Pods-App-frameworks` | Xcode가 빌드 스크립트를 모래상자에 가둬서 생기는 문제. TARGETS → App → **Build Settings** 탭 → 검색창에 `sandbox` → **User Script Sandboxing**을 **No**로 변경 후 다시 Run. (그래도 나면 PROJECT 쪽 App에서도 동일하게 No) |
+| ⚠️ 노란 경고 여러 개 (`WKProcessPool is deprecated` 등) | 무시해도 됩니다. 플러그인 내부의 낡은 표현 알림일 뿐 동작에는 문제 없음 |
 
 ---
 
