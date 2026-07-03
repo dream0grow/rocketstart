@@ -87,6 +87,9 @@ body {
   font-size: 15px;
 }
 .chip.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+/* 미세 조절 줄 (±30초/±1분) — 빠른 선택 아래 한 줄로 */
+.picker-fine { display: flex; gap: 8px; justify-content: center; width: 100%; margin-top: 6px; }
+.picker-fine .chip.fine { font-size: 13px; padding: 7px 12px; color: var(--muted); }
 
 /* 버튼 */
 .controls { display: flex; gap: 12px; justify-content: center; margin-top: 22px; }
@@ -183,6 +186,8 @@ body {
   border: 1px solid var(--panel-2); border-radius: 10px; padding: 10px;
 }
 .switch { width: 26px; height: 26px; accent-color: var(--accent); }
+/* 완료음 크기 슬라이더 */
+.set-range { width: 150px; accent-color: var(--accent); }
 /* 설정 화면 select 요소 스타일 */
 .set-select {
   background: var(--panel);
